@@ -1,0 +1,18 @@
+[
+  {
+    "fen": "rnbqkb1r/pppp1ppp/5n5/4p3/4P3/5N5/PPPP1PPP/RNBQKB1R w KQkq - 0 1",
+    "solution": "Nf3"
+  },
+  {
+    "fen": "rnbqkb1r/pppppp1p/5n5/4P3/4P3/5N5/PPPP1PPP/RNBQKB1R b KQkq - 0 1",
+    "solution": "Nf6"
+  },
+  {
+    "fen": "rnbqkb1r/pppppp1p/5n5/4P3/4P3/5N5/PPPP1PPP/RNBQKB1R w KQkq - 0 2",
+    "solution": "Nf3"
+  },
+  {
+    "fen": "rnbqkb1r/pppppp1p/5n5/4P3/4P3/5N5/PPPP1PPP/RNBQKB1R b KQkq - 0 2",
+    "solution": "Nf6"
+  }
+]

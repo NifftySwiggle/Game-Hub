@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CyberSmith’s Neon Run</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+<body>
+<script>
+class Player {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 5; // Auto-run right
+    this.vy = 0;
+    this.width = 40;
+    this.height = 40;
+    this.hasGun = false;
+    this.gunTimer = 0;
+    this.bullets = [];
+  }
+
+  update() {
+    // Keyboard movement overrides auto-run
+    if (keyIsDown(LEFT_ARROW)) {
+      this.vx = -5;
+      console.log('Key held: Moving left, vx=' + this.vx);
+    } else if (keyIsDown(RIGHT_ARROW)) {
+      this.vx = 5;
+      console.log('Key held: Moving right, vx=' + this.vx);
+    } else if (!isMobile && !touches.length) {
+      this.vx = 5; // Revert to auto-run if no keys or touch
+    }
+
+    // Apply physics
+    this.vy += gravity;
+    this.y += this.vy;
+    this.x += this.vx;
+
+    // Bounds
+    this.y = constrain(this.y, 0, height - this.height);
+    this.x = max(this.x, cameraX);
+
+    // Platform collisions
+    let onPlatform = false;
+    for (let platform of platforms) {
+      if (this.x > platform.x - this.width / 2 && this.x < platform.x + platform.width + this.width / 2 &&
+          this.y + this.height > platform.y && this.y + this.height < platform.y + 20 &&
+          this.vy > 0) {
+        this.y = platform.y - this.height;
+        this.vy = 0;
+        onPlatform = true;
+      }
+    }
+
+    // Ground death
+    if (this.y >= height - this.height && !onPlatform && gameState === 'playing') {
+      gameState = 'gameOver';
+      console.log('Game over: Hit ground');
+    }
+
+    // Gun timer
+    if (this.hasGun) {
+      this.gunTimer--;
+      if (this.gunTimer <= 0) {
+        this.hasGun = false;
+      }
+    }
+
+    // Score
+    score = max(score, floor(this.x / 10));
+  }
+
+  show() {
+    fill(this.hasGun ? color(255, 100, 100) : color(100, 255, 100));
+    rect(this.x - this.width / 2, this.y, this.width, this.height);
+  }
+
+  jump() {
+    if (this.vy === 0) {
+      this.vy = jumpForce;
+    }
+  }
+
+  shoot() {
+    this.bullets.push(new Bullet(this.x + this.width / 2, this.y));
+  }
+}
+
+class Platform {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 100;
+    this.height = 10;
+  }
+
+  show() {
+    fill(255, 100, 255);
+    rect(this.x, this.y, this.width, this.height);
+  }
+
+  offScreen() {
+    return this.x + this.width < cameraX;
+  }
+}
+
+class PowerUp {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.type = random(['gun', 'jetpack']);
+  }
+
+  show() {
+    fill(this.type === 'gun' ? color(255, 0, 0) : color(0, 255, 255));
+    ellipse(this.x, this.y, 20, 20);
+  }
+
+  hits(player) {
+    let d = dist(this.x, this.y, player.x, player.y + player.height / 2);
+    return d < 20;
+  }
+
+  apply(player) {
+    if (this.type === 'gun') {
+      player.hasGun = true;
+      player.gunTimer = 300;
+    } else if (this.type === 'jetpack') {
+      player.vy = -10;
+    }
+  }
+
+  offScreen() {
+    return this.x < cameraX;
+  }
+}
+
+class Bullet {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 10;
+  }
+
+  update() {
+    this.x += this.vx;
+  }
+
+  show() {
+    fill(255, 255, 0);
+    ellipse(this.x, this.y, 10, 10);
+  }
+
+  hits(enemy) {
+    let d = dist(this.x, this.y, enemy.x, enemy.y);
+    return d < 15;
+  }
+}
+
+class Enemy {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = random([-2, 2]);
+  }
+
+  update() {
+    this.x += this.vx;
+    if (this.x < cameraX + 100 || this.x > cameraX + width - 100) {
+      this.vx *= -1;
+    }
+  }
+
+  show() {
+    fill(255, 0, 0);
+    ellipse(this.x, this.y, 30, 30);
+  }
+
+  hits(player) {
+    let d = dist(this.x, this.y, player.x, player.y + player.height / 2);
+    return d < 30;
+  }
+
+  offScreen() {
+    return this.x < cameraX;
+  }
+}
+
+let player;
+let platforms = [];
+let powerUps = [];
+let enemies = [];
+let score = 0;
+let gravity = 0.6;
+let jumpForce = -15;
+let gameState = 'playing';
+let cameraX = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let lastTap = 0;
+let isMobile = false;
+let leftButton = { x: 10, y: 0, w: 50, h: 50, pressed: false };
+let rightButton = { x: 70, y: 0, w: 50, h: 50, pressed: false };
+let actionButton = { x: 0, y: 0, w: 50, h: 50, pressed: false };
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  isMobile = windowWidth <= 768;
+  startGame();
+  console.log(`Setup complete: ${platforms.length} platforms, ${enemies.length} enemies, ${powerUps.length} power-ups, isMobile: ${isMobile}`);
+}
+
+function startGame() {
+  platforms = [];
+  for (let i = 0; i < 10; i++) {
+    platforms.push(new Platform(100 + i * 150, random(height * 0.2, height * 0.6)));
+  }
+  player = new Player(100, platforms[0].y - 40);
+  powerUps = [];
+  enemies = [];
+  score = 0;
+  gameState = 'playing';
+  cameraX = 0;
+  loop();
+  console.log('startGame: Initialized ' + platforms.length + ' platforms');
+}
+
+function draw() {
+  background(20, 20, 50);
+  cameraX = max(player.x - width * 0.3, cameraX);
+  push();
+  translate(-cameraX, 0);
+
+  player.update();
+  player.show();
+
+  for (let i = platforms.length - 1; i >= 0; i--) {
+    platforms[i].show();
+    if (platforms[i].offScreen()) {
+      platforms.splice(i, 1);
+      let lastPlatform = platforms[platforms.length - 1];
+      platforms.push(new Platform(lastPlatform.x + random(100, 200), random(height * 0.2, height * 0.6)));
+    }
+  }
+
+  for (let i = powerUps.length - 1; i >= 0; i--) {
+    powerUps[i].show();
+    if (powerUps[i].hits(player)) {
+      powerUps[i].apply(player);
+      powerUps.splice(i, 1);
+    } else if (powerUps[i].offScreen()) {
+      powerUps.splice(i, 1);
+    }
+  }
+
+  if (random() < 0.005) {
+    let lastPlatform = platforms[platforms.length - 1];
+    powerUps.push(new PowerUp(lastPlatform.x + random(0, 100), lastPlatform.y - 20));
+  }
+
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    enemies[i].update();
+    enemies[i].show();
+    if (enemies[i].hits(player)) {
+      gameState = 'gameOver';
+      console.log('Game over: Hit enemy');
+    } else if (enemies[i].offScreen()) {
+      enemies.splice(i, 1);
+    }
+  }
+
+  if (random() < 0.002) {
+    let lastPlatform = platforms[platforms.length - 1];
+    enemies.push(new Enemy(lastPlatform.x + random(0, 100), lastPlatform.y - 30));
+  }
+
+  for (let i = player.bullets.length - 1; i >= 0; i--) {
+    player.bullets[i].update();
+    player.bullets[i].show();
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      if (player.bullets[i].hits(enemies[j])) {
+        enemies.splice(j, 1);
+        player.bullets.splice(i, 1);
+        score += 100;
+        break;
+      }
+    }
+  }
+
+  fill(255);
+  textSize(20);
+  textAlign(LEFT);
+  text('Score: ' + score, cameraX + 10, 30);
+  pop();
+
+  if (gameState === 'gameOver') {
+    fill(255, 0, 0);
+    textSize(50);
+    textAlign(CENTER);
+    text('Game Over', width / 2, height / 2);
+    text('Score: ' + score, width / 2, height / 2 + 60);
+    fill(0, 255, 0);
+    rect(width / 2 - 100, height / 2 + 100, 200, 50);
+    fill(0);
+    textSize(30);
+    text('Restart', width / 2, height / 2 + 135);
+    noLoop();
+  }
+
+  if (isMobile) {
+    leftButton.y = height - 60;
+    rightButton.y = height - 60;
+    actionButton.x = width - 60;
+    actionButton.y = height - 60;
+    fill(leftButton.pressed ? color(255, 255, 0) : color(255, 255, 255, 100));
+    rect(leftButton.x, leftButton.y, leftButton.w, leftButton.h);
+    fill(rightButton.pressed ? color(255, 255, 0) : color(255, 255, 255, 100));
+    rect(rightButton.x, rightButton.y, rightButton.w, rightButton.h);
+    fill(actionButton.pressed ? color(255, 255, 0) : color(255, 255, 255, 100));
+    rect(actionButton.x, actionButton.y, actionButton.w, actionButton.h);
+    fill(0);
+    textSize(20);
+    textAlign(CENTER);
+    text('←', leftButton.x + 25, leftButton.y + 35);
+    text('→', rightButton.x + 25, rightButton.y + 35);
+    text('A', actionButton.x + 25, actionButton.y + 35);
+  }
+}
+
+function touchStarted() {
+  if (gameState === 'gameOver') {
+    let restartX = width / 2 - 100;
+    let restartY = height / 2 + 100;
+    if (mouseX > restartX && mouseX < restartX + 200 &&
+        mouseY > restartY && mouseY < restartY + 50) {
+      console.log('Touch: Restarting game');
+      startGame();
+    }
+    return false;
+  }
+
+  if (isMobile) {
+    for (let touch of touches) {
+      if (touch.x > leftButton.x && touch.x < leftButton.x + leftButton.w &&
+          touch.y > leftButton.y && touch.y < leftButton.y + leftButton.h) {
+        leftButton.pressed = true;
+        player.vx = -5;
+        console.log('Touch: Left button pressed');
+      } else if (touch.x > rightButton.x && touch.x < rightButton.x + rightButton.w &&
+                 touch.y > rightButton.y && touch.y < rightButton.y + rightButton.h) {
+        rightButton.pressed = true;
+        player.vx = 5;
+        console.log('Touch: Right button pressed');
+      } else if (touch.x > actionButton.x && touch.x < actionButton.x + actionButton.w &&
+                 touch.y > actionButton.y && touch.y < actionButton.y + actionButton.h) {
+        actionButton.pressed = true;
+        let currentTime = millis();
+        if (currentTime - lastTap < 300 && player.hasGun) {
+          console.log('Touch: Double tap, shooting');
+          player.shoot();
+        } else if (player.vy === 0) {
+          console.log('Touch: Single tap, jumping');
+          player.jump();
+        }
+        lastTap = currentTime;
+      }
+    }
+  } else {
+    let currentTime = millis();
+    if (currentTime - lastTap < 300 && player.hasGun) {
+      console.log('Touch: Double tap, shooting');
+      player.shoot();
+    } else if (player.vy === 0) {
+      console.log('Touch: Single tap, jumping');
+      player.jump();
+    }
+    lastTap = currentTime;
+  }
+
+  return false;
+}
+
+function touchMoved() {
+  if (!isMobile) {
+    let dx = mouseX - touchStartX;
+    player.vx = constrain(dx * 0.1, -7, 7);
+    console.log(`Swipe: dx=${dx}, player.vx=${player.vx}`);
+    touchStartX = mouseX;
+  }
+  return false;
+}
+
+function touchEnded() {
+  if (isMobile) {
+    leftButton.pressed = false;
+    rightButton.pressed = false;
+    actionButton.pressed = false;
+    player.vx = 5; // Revert to auto-run
+    console.log('Touch ended: player.vx set to 5 (auto-run)');
+  }
+  return false;
+}
+
+function keyPressed() {
+  if (keyCode === UP_ARROW && player.vy === 0) {
+    console.log('Key pressed: Jumping');
+    player.jump();
+  }
+  if (key === ' ' && player.hasGun) {
+    console.log('Key pressed: Shooting');
+    player.shoot();
+  }
+  if (gameState === 'gameOver' && keyCode === ENTER) {
+    console.log('Key pressed: Restarting');
+    startGame();
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  leftButton.y = height - 60;
+  rightButton.y = height - 60;
+  actionButton.x = width - 60;
+  actionButton.y = height - 60;
+}
+</script>
+</body>
+</html>

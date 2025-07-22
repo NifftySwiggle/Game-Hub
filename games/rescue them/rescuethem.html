@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pet Rescue Adventure</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      border: 2px solid #333;
+    }
+    #hud {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 8px;
+      border-radius: 5px;
+      font-size: 12px;
+      max-width: 200px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    #hud h2 {
+      font-size: 14px;
+      margin: 0 0 5px;
+    }
+    #hud p {
+      margin: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <h2>Pet Rescue</h2>
+    <p>Arrow keys: Move</p>
+    <p>SPACE: Rescue pet (if carrying < 3)</p>
+    <p>D: Deliver pets at shelter</p>
+    <p id="score">Score: 0</p>
+    <p id="carrying">Carrying: 0/3</p>
+    <p id="message"></p>
+  </div>
+  <script>
+    let player;
+    let pets = [];
+    let rescuedPets = [];
+    let powerUps = [];
+    let effects = [];
+    let score = 0;
+    let maxPets = 3;
+    let message = '';
+    let messageTimer = 0;
+    let spawnTimer = 0;
+    let spawnPowerUpTimer = 0;
+    let shelterX, shelterY, shelterWidth = 100, shelterHeight = 100;
+
+    function setup() {
+      console.log("Setup: Initializing canvas and game objects");
+      try {
+        createCanvas(800, 600);
+        shelterX = width - shelterWidth;
+        shelterY = height - shelterHeight;
+        player = new Player(width / 2, height / 2);
+        for (let i = 0; i < 5; i++) {
+          let x = random(width);
+          let y = random(height);
+          let type = random(['Dog', 'Cat', 'Rabbit']);
+          let behavior = random() < 0.3 ? 'shy' : 'regular';
+          pets.push(new Pet(x, y, type, behavior));
+        }
+        console.log("Setup: Successfully created canvas and initialized", pets.length, "pets");
+      } catch (e) {
+        console.error("Setup failed:", e);
+      }
+    }
+
+    function draw() {
+      try {
+        // Update timers
+        spawnTimer++;
+        spawnPowerUpTimer++;
+        if (messageTimer > 0) messageTimer--;
+
+        // Spawn new pets periodically
+        if (spawnTimer >= 300 && pets.length < 10) {
+          spawnTimer = 0;
+          let x = random(width);
+          let y = random(height);
+          let type = random(['Dog', 'Cat', 'Rabbit']);
+          let behavior = random() < 0.3 ? 'shy' : 'regular';
+          pets.push(new Pet(x, y, type, behavior));
+        }
+
+        // Spawn power-ups periodically
+        if (spawnPowerUpTimer >= 900 && powerUps.length === 0) {
+          spawnPowerUpTimer = 0;
+          let x = random(width);
+          let y = random(height);
+          powerUps.push(new PowerUp(x, y, 'speed'));
+        }
+
+        // Update player and pets
+        player.move();
+        for (let pet of pets) {
+          pet.update();
+        }
+
+        // Check for power-up collisions
+        for (let i = powerUps.length - 1; i >= 0; i--) {
+          if (player.nearPowerUp(powerUps[i])) {
+            if (powerUps[i].type === 'speed') {
+              player.speedBoostTimer = 300;
+              message = "Speed boost activated!";
+              messageTimer = 120;
+            }
+            powerUps.splice(i, 1);
+          }
+        }
+
+        // Draw background
+        background(100, 200, 100); // Grass
+        fill(150, 100, 50); // Path
+        rect(0, height / 2 - 50, width, 100);
+
+        // Draw shelter
+        fill(0, 255, 0);
+        rect(shelterX, shelterY, shelterWidth, shelterHeight);
+        fill(0);
+        textSize(16);
+        text("Shelter", shelterX + 10, shelterY + 20);
+
+        // Draw player
+        player.show();
+
+        // Draw pets
+        for (let pet of pets) {
+          pet.show();
+        }
+
+        // Draw power-ups
+        for (let powerUp of powerUps) {
+          powerUp.show();
+        }
+
+        // Draw effects
+        for (let effect of effects) {
+          textSize(20);
+          text('✨', effect.x, effect.y);
+          effect.timer--;
+        }
+        effects = effects.filter(e => e.timer > 0);
+
+        // Update HUD
+        document.getElementById('score').innerText = `Score: ${score}`;
+        document.getElementById('carrying').innerText = `Carrying: ${rescuedPets.length}/3`;
+        document.getElementById('message').innerText = messageTimer > 0 ? message : '';
+      } catch (e) {
+        console.error("Draw loop error:", e);
+      }
+    }
+
+    function keyPressed() {
+      try {
+        if (keyCode === 32) { // SPACE key
+          if (rescuedPets.length < maxPets) {
+            for (let i = pets.length - 1; i >= 0; i--) {
+              if (player.nearPet(pets[i])) {
+                pets[i].startRescueAnimation();
+                rescuedPets.push(pets[i]);
+                effects.push({x: pets[i].x, y: pets[i].y, timer: 30});
+                pets.splice(i, 1);
+                break;
+              }
+            }
+          } else {
+            message = "Can't carry more pets! Deliver to shelter.";
+            messageTimer = 120;
+          }
+        } else if (keyCode === 68) { // D key for deliver
+          if (isInShelter()) {
+            for (let pet of rescuedPets) {
+              score += pet.points;
+            }
+            rescuedPets = [];
+            message = "Delivered pets!";
+            messageTimer = 120;
+          }
+        }
+      } catch (e) {
+        console.error("Key pressed error:", e);
+      }
+    }
+
+    function isInShelter() {
+      return player.x >= shelterX && player.x <= shelterX + shelterWidth &&
+             player.y >= shelterY && player.y <= shelterY + shelterHeight;
+    }
+
+    class Player {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 20;
+        this.speed = 5;
+        this.speedBoostTimer = 0;
+      }
+
+      show() {
+        fill(0, 0, 255);
+        ellipse(this.x, this.y, this.size);
+        textSize(20);
+        text('🙂', this.x - 10, this.y + 5);
+      }
+
+      move() {
+        let speed = this.speedBoostTimer > 0 ? 10 : 5;
+        if (keyIsDown(LEFT_ARROW)) this.x -= speed;
+        if (keyIsDown(RIGHT_ARROW)) this.x += speed;
+        if (keyIsDown(UP_ARROW)) this.y -= speed;
+        if (keyIsDown(DOWN_ARROW)) this.y += speed;
+        this.x = constrain(this.x, 0, width);
+        this.y = constrain(this.y, 0, height);
+        if (this.speedBoostTimer > 0) this.speedBoostTimer--;
+      }
+
+      nearPet(pet) {
+        let d = dist(this.x, this.y, pet.x, pet.y);
+        return d < this.size / 2 + pet.size / 2;
+      }
+
+      nearPowerUp(powerUp) {
+        let d = dist(this.x, this.y, powerUp.x, powerUp.y);
+        return d < this.size / 2 + powerUp.size / 2;
+      }
+    }
+
+    class Pet {
+      constructor(x, y, type, behavior) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.behavior = behavior;
+        this.points = behavior === 'shy' ? 20 : 10;
+        this.size = 15;
+        this.speed = random(1, 3);
+        this.direction = random(TWO_PI);
+        this.rescueFrame = 0;
+        this.isRescuing = false;
+      }
+
+      show() {
+        let emoji = this.type === 'Dog' ? '🐶' : this.type === 'Cat' ? '🐱' : '🐰';
+        if (this.isRescuing && frameCount % 10 < 5) {
+          fill(255, 255, 0); // Flash yellow during rescue
+          ellipse(this.x, this.y, this.size + 5);
+        }
+        textSize(20);
+        text(emoji, this.x - 10, this.y + 5);
+        fill(0);
+        textSize(12);
+        text(this.type, this.x - 15, this.y - 15);
+      }
+
+      update() {
+        if (this.isRescuing) {
+          this.rescueFrame++;
+          if (this.rescueFrame > 30) {
+            this.isRescuing = false;
+          }
+        } else {
+          if (this.behavior === 'shy') {
+            let d = dist(this.x, this.y, player.x, player.y);
+            if (d < 100) {
+              this.direction = atan2(this.y - player.y, this.x - player.x);
+            } else {
+              this.direction += random(-0.1, 0.1);
+            }
+          } else {
+            this.direction += random(-0.1, 0.1);
+          }
+          this.x += cos(this.direction) * this.speed;
+          this.y += sin(this.direction) * this.speed;
+          if (this.x < 0 || this.x > width) this.direction = PI - this.direction;
+          if (this.y < 0 || this.y > height) this.direction = -this.direction;
+          this.x = constrain(this.x, 0, width);
+          this.y = constrain(this.y, 0, height);
+        }
+      }
+
+      startRescueAnimation() {
+        this.isRescuing = true;
+        this.rescueFrame = 0;
+      }
+    }
+
+    class PowerUp {
+      constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.size = 20;
+      }
+
+      show() {
+        fill(255, 215, 0); // Gold color
+        ellipse(this.x, this.y, this.size);
+        textSize(12);
+        text('🏃', this.x - 6, this.y + 4); // Running emoji for speed
+      }
+    }
+  </script>
+</body>
+</html>
