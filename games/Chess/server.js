@@ -9,6 +9,16 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.static(__dirname));
 
+/ Handle GET /
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "chessV1.html"));
+});
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Chess server running at http://localhost:${PORT}/`);
+});
+
 const games = {};
 const tournaments = {};
 
