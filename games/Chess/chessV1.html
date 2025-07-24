@@ -525,7 +525,7 @@ function connectWebSocket() {
     if (ws && ws.readyState === WebSocket.OPEN) {
       return;
     }
-    ws = new WebSocket('ws://localhost:8080');
+    ws = new WebSocket('ws://game-hub-fnqa.onrender.com');
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
       ws.send(JSON.stringify({ type: 'fetchLobby' })); // <-- change here
