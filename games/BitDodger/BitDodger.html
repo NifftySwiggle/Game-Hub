@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bit Dodger</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #121212; color: white; font-family: sans-serif; touch-action: none; }
+    #startScreen {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
+    }
+    #startScreen h1 { font-size: 2em; margin-bottom: 20px; }
+    #startScreen button {
+      padding: 12px 24px; margin: 6px; font-size: 1em; background: crimson;
+      color: white; border: none; border-radius: 6px; cursor: pointer;
+    }
+    #player {
+      position: absolute; bottom: 10px; left: 50%;
+      width: 40px; height: 40px; background: rgb(77, 20, 220); border-radius: 50%;
+      transform: translateX(-50%);
+    }
+    .block, .pit {
+      position: absolute; width: 20px; height: 20px; background: black;
+    }
+    .pit { background: gold; border-radius: 50%; }
+    #score {
+      position: fixed; top: 10px; left: 10px; font-size: 16px;
+      z-index: 5;
+    }
+    #shield {
+      position: fixed; bottom: 10px; right: 10px;
+      padding: 10px 18px; font-size: 14px; background: dodgerblue;
+      color: white; border: none; border-radius: 6px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <h1>Swipe Dodger Rescue</h1>
+    <p>Choose your mode:</p>
+    <button onclick="startGame('avoid')">Avoid Mode</button>
+    <button onclick="startGame('collect')">Collect Mode</button>
+  </div>
+
+  <div id="player"></div>
+  <div id="score">Score: 0</div>
+  <button id="shield" onclick="activateShield()">Shield</button>
+
+
+  <script>
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    const startScreen = document.getElementById('startScreen');
+    const shieldBtn = document.getElementById('shield');
+    let score = 0, speed = 5, gameMode = '', shieldActive = false;
+
+    function startGame(mode) {
+      gameMode = mode;
+      startScreen.style.display = 'none';
+      shieldBtn.style.display = 'block';
+      setInterval(() => { spawnBlock(); increaseDifficulty(); }, 800);
+      if (gameMode === 'collect') setInterval(spawnPit, 1500);
+    }
+
+    document.addEventListener('touchmove', e => {
+      const touch = e.touches[0];
+      player.style.left = `${touch.clientX - 20}px`;
+    });
+
+    document.addEventListener('mousemove', e => {
+      player.style.left = `${e.clientX - 20}px`;
+    });
+
+    function spawnBlock() {
+      const block = document.createElement('div');
+      block.classList.add('block');
+      block.style.left = `${Math.random() * window.innerWidth}px`;
+      document.body.appendChild(block);
+
+      let top = 0;
+      const fall = setInterval(() => {
+        top += speed;
+        block.style.top = `${top}px`;
+
+        const playerRect = player.getBoundingClientRect();
+        const blockRect = block.getBoundingClientRect();
+
+        if (
+          blockRect.bottom > playerRect.top &&
+          blockRect.left < playerRect.right &&
+          blockRect.right > playerRect.left
+        ) {
+          if (!shieldActive) {
+            clearInterval(fall);
+            alert(`💥 Game Over! Final Score: ${score}`);
+            window.location.reload();
+          }
+        }
+
+        if (top > window.innerHeight) {
+          clearInterval(fall);
+          document.body.removeChild(block);
+        }
+      }, 30);
+    }
+
+    function spawnPit() {
+      const pit = document.createElement('div');
+      pit.classList.add('pit');
+      pit.style.left = `${Math.random() * window.innerWidth}px`;
+      document.body.appendChild(pit);
+
+      let top = 0;
+      const fall = setInterval(() => {
+        top += speed;
+        pit.style.top = `${top}px`;
+
+        const playerRect = player.getBoundingClientRect();
+        const pitRect = pit.getBoundingClientRect();
+
+        if (
+          pitRect.bottom > playerRect.top &&
+          pitRect.left < playerRect.right &&
+          pitRect.right > playerRect.left
+        ) {
+          clearInterval(fall);
+          document.body.removeChild(pit);
+          score += 5;
+          scoreEl.textContent = `Score: ${score}`;
+        }
+
+        if (top > window.innerHeight) {
+          clearInterval(fall);
+          document.body.removeChild(pit);
+        }
+      }, 30);
+    }
+
+    function activateShield() {
+      if (shieldActive) return;
+      shieldActive = true;
+      shieldBtn.textContent = "Shield On";
+      shieldBtn.style.background = "limegreen";
+      setTimeout(() => {
+        shieldActive = false;
+        shieldBtn.textContent = "Shield";
+        shieldBtn.style.background = "dodgerblue";
+      }, 3000);
+    }
+
+    function increaseDifficulty() {
+      speed += 0.02;
+      if (speed > 20) speed = 20;
+    }
+  </script>
+</body>
+</html>

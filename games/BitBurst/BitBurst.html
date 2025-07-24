@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bit Burst</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+        #menu, #levelSelection, #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+        }
+        #menu button, #levelSelection button, #gameOver button {
+            padding: 10px 20px;
+            font-size: 20px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #0095DD;
+            border: none;
+            color: white;
+            border-radius: 5px;
+        }
+        #gameCanvas {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+        }
+        #levelList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .level-item {
+            margin: 10px;
+            cursor: pointer;
+            position: relative;
+            width: 100px;
+            height: 50px;
+            background: #333;
+        }
+        .level-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .brick {
+            position: absolute;
+            background: #0095DD;
+        }
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <h1>BIT BURST</h1>
+        <p>Break all the platforms to win!</p>
+        <p>Use the mouse or touch to move the paddle.</p>
+        <button onclick="showLevelSelection()">Play Levels</button>
+        <button onclick="startGame('survivor')">Survivor Mode</button>
+    </div>
+    <div id="levelSelection" style="display: none;">
+        <h2>Select Level</h2>
+        <div id="levelList"></div>
+        <button onclick="returnToMenu()">Back</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOver" style="display: none;">
+        <h1>Game Over</h1>
+        <button onclick="returnToMenu()">Main Menu</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const levelSelection = document.getElementById('levelSelection');
+        const gameOverScreen = document.getElementById('gameOver');
+        let gameMode = '';
+        let level = 1;
+        let survivorMode = false;
+        let paddleX = 0;
+        let ballX = 0;
+        let ballY = 0;
+        const BALL_DX = 2;
+        const BALL_DY = -2;
+        let ballDX = BALL_DX;
+        let ballDY = BALL_DY;
+        let bricks = [];
+        let score = 0;
+        const paddleWidth = 100;
+        const paddleHeight = 10;
+        const ballRadius = 10;
+        const brickWidth = 75;
+        const brickHeight = 20;
+        const brickPadding = 10;
+        let brickOffsetLeft = 0; 
+        const brickOffsetTop = 30;
+        const minBrickY = 200; // Minimum distance from the bottom
+
+        const levels = [
+            {
+                layout: [
+                    [0,0,0,0],
+                    [0,0,0,0],
+                    [0,1,1,0],
+                    [1,1,1,1],
+                    [0,0,0,0]
+                ],
+                hits: 1
+            },
+            {
+                layout: [
+                    [0,0,0,0,0,0,0,0],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1]
+                ],
+                hits: 1
+            },
+            {
+                layout: [
+                    [0,0,1,0,0,1,0,0],
+                    [1,0,0,0,0,0,0,1],
+                    [1,1,0,1,1,0,1,1],
+                    [0,0,0,1,1,0,0,0]
+                ],
+                hits: 1
+            },
+            {
+                layout: [
+                    [0,0,1,1,1,1,0,0],
+                    [0,1,1,1,1,1,1,0],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1]
+                ],
+                hits: 1
+            },
+            {
+                layout: [
+                    [1,0,1,0,0,0,1,0],
+                    [1,1,1,0,0,1,1,1],
+                    [1,0,1,0,0,0,1,0],
+                    [1,0,1,0,0,1,0,1],
+                ],
+                hits: 1
+            },
+            {
+                layout: [
+                    [1,0,1,0,1,0,1,0],
+                    [0,1,0,1,0,1,0,1],
+                    [1,0,1,0,1,0,1,0],
+                    [0,1,0,1,0,1,0,1],
+                    [1,0,1,0,1,0,1,0]
+                ],
+                hits: 2
+            },
+            {
+                layout: [
+                    [1,1,1,0,0,1,1,1],
+                    [1,0,0,1,1,0,0,1],
+                    [0,1,1,0,0,1,1,0],
+                    [1,0,0,1,1,0,0,1],
+                    [1,1,1,0,0,1,1,1]
+                ],
+                hits: 2
+            },
+            {
+                layout: [
+                    [0,0,0,0,0,0],
+                    [1,1,1,1,1,1],
+                    [0,0,0,0,0,0],
+                    [1,1,1,1,1,1]
+                ],
+                hits: 3
+            }
+            // Add more levels with unique layouts as needed
+        ];
+
+        function generateRandomLayout(rows, cols, minY) {
+            const layout = [];
+            const maxRows = Math.floor((canvas.height - minY) / (brickHeight + brickPadding));
+            const actualRows = Math.min(rows, maxRows);
+            for (let r = 0; r < actualRows; r++) {
+                const row = [];
+                for (let c = 0; c < cols; c++) {
+                    row.push(Math.random() > 0.5 ? 1 : 0);
+                }
+                layout.push(row);
+            }
+            return layout;
+        }
+
+        function startGame(mode) {
+            menu.style.display = 'none';
+            levelSelection.style.display = 'none';
+            canvas.style.display = 'block';
+            gameMode = mode;
+            survivorMode = mode === 'survivor';
+            level = 1;
+            score = 0;
+            initGame();
+        }
+
+        function showLevelSelection() {
+            menu.style.display = 'none';
+            levelSelection.style.display = 'block';
+            const levelList = document.getElementById('levelList');
+            levelList.innerHTML = '';
+            levels.forEach((level, index) => {
+                const levelDiv = document.createElement('div');
+                levelDiv.className = 'level-item';
+                levelDiv.innerHTML = `Level ${index + 1}`;
+                levelDiv.onclick = () => startLevel(index + 1);
+                const preview = document.createElement('div');
+                preview.className = 'level-preview';
+
+                //Calculate layout size
+                const rows = level.layout.length;
+                const cols = Math.max(...level.layout.map(row => row.length));
+                const previewWidth = cols * 10;
+                const previewHeight = rows * 10;
+
+                //Apply centering styles to preview container
+                preview.style.width = `${previewWidth}px`;
+                preview.style.height = `${previewHeight}px`;
+                preview.style.position = 'absolute';
+                preview.style.top = '50%';
+                preview.style.left = '50%';
+                preview.style.transform = 'translate(-50%, -50%)';
+
+                level.layout.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        if (cell) {
+                            const brick = document.createElement('div');
+                            brick.className = 'brick';
+                            brick.style.left = `${c * 10}px`;
+                            brick.style.top = `${r * 10}px`;
+                            brick.style.width = '7px';
+                            brick.style.height = '7px';
+                            preview.appendChild(brick);
+                        }
+                    });
+                });
+                levelDiv.appendChild(preview);
+                levelList.appendChild(levelDiv);
+            });
+        }
+
+        function startLevel(levelNum) {
+            level = levelNum;
+            levelSelection.style.display = 'none';
+            canvas.style.display = 'block';
+            initGame();
+        }
+
+        function returnToMenu() {
+            gameOverScreen.style.display = 'none';
+            levelSelection.style.display = 'none';
+            menu.style.display = 'block';
+            canvas.style.display = 'none';
+        }
+
+        function initGame() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            paddleX = (canvas.width - paddleWidth) / 2;
+            ballX = canvas.width / 2;
+            ballY = canvas.height - 30;
+            ballDX = BALL_DX;
+            ballDY = BALL_DY;
+            let currentLevel;
+            if (survivorMode) {
+                const rows = level;
+                const cols = 8;
+                const layout = generateRandomLayout(rows, cols, minBrickY);
+                currentLevel = { layout: layout, hits: 1 };
+            } else {
+                currentLevel = levels[level - 1];
+            }
+            const rows = currentLevel.layout.length;
+            const cols = currentLevel.layout[0].length;
+            const gridWidth = cols * brickWidth + (cols - 1) * brickPadding;
+            brickOffsetLeft = (canvas.width - gridWidth) / 2;
+            bricks = [];
+            for (let c = 0; c < cols; c++) {
+                bricks[c] = [];
+                for (let r = 0; r < rows; r++) {
+                    bricks[c][r] = { x: 0, y: 0, status: currentLevel.layout[r][c] * currentLevel.hits };
+                }
+            }
+            draw();
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#0095DD';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = '#0095DD';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawBricks() {
+            for (let c = 0; c < bricks.length; c++) {
+                for (let r = 0; r < bricks[c].length; r++) {
+                    if (bricks[c][r].status > 0) {
+                        const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+                        const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                        ctx.fillStyle = bricks[c][r].status > 1 ? '#FF5555' : '#0095DD';
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        function drawScore() {
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#FFF';
+            ctx.fillText(`Score: ${score} | Level: ${survivorMode ? level : level}`, 8, 20);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBricks();
+            drawBall();
+            drawPaddle();
+            drawScore();
+            collisionDetection();
+
+            ballX += ballDX;
+            ballY += ballDY;
+
+            if (ballX + ballDX > canvas.width - ballRadius || ballX + ballDX < ballRadius) {
+                ballDX = -ballDX;
+            }
+            if (ballY + ballDY < ballRadius) {
+                ballDY = -ballDY;
+            } else if (ballY + ballDY > canvas.height - ballRadius) {
+                if (ballX > paddleX && ballX < paddleX + paddleWidth) {
+                    ballDY = -ballDY;
+                } else {
+                    endGame();
+                    return;
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function collisionDetection() {
+            let allDestroyed = true;
+            for (let c = 0; c < bricks.length; c++) {
+                for (let r = 0; r < bricks[c].length; r++) {
+                    const b = bricks[c][r];
+                    if (b.status > 0) {
+                        allDestroyed = false;
+                        if (ballX > b.x && ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight) {
+                            ballDY = -ballDY;
+                            b.status--;
+                            score += 10;
+                        }
+                    }
+                }
+            }
+            if (allDestroyed) {
+                nextLevel();
+            }
+        }
+
+        function nextLevel() {
+            if (survivorMode) {
+                level += 1;
+                initGame();
+            } else {
+                level += 1;
+                if (level > levels.length) {
+                    endGame();
+                } else {
+                    initGame();
+                }
+            }
+        }
+
+        function endGame() {
+            canvas.style.display = 'none';
+            gameOverScreen.style.display = 'block';
+        }
+
+        document.addEventListener('mousemove', mouseMoveHandler, false);
+        document.addEventListener('touchmove', touchMoveHandler, false);
+
+        function mouseMoveHandler(e) {
+            const relativeX = e.clientX - canvas.offsetLeft;
+            if (relativeX > 0 && relativeX < canvas.width) {
+                paddleX = relativeX - paddleWidth / 2;
+            }
+        }
+
+        function touchMoveHandler(e) {
+            if (e.touches.length > 0) {
+                const relativeX = e.touches[0].clientX - canvas.offsetLeft;
+                if (relativeX > 0 && relativeX < canvas.width) {
+                    paddleX = relativeX - paddleWidth / 2;
+                }
+            }
+            e.preventDefault();
+        }
+    </script>
+</body>
+</html>
