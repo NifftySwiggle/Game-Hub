@@ -3,6 +3,8 @@ const http = require('http');
 const WebSocket = require('ws');
 const Chess = require('chess.js').Chess;
 const path = require("path");
+const cors = require("cors");
+app.use(cors());
 
 const app = express();
 const server = http.createServer(app);
