@@ -10,5 +10,335 @@
   {
   "fen": "6k1/5ppp/8/8/8/8/5PPP/4Q2K w - - 0 1",
   "solution": "Qe8#"
+  },
+  {
+    "fen": "4R3/8/8/2Pkp3/N7/4rnKB/1nb5/b1r5 w - - 0 1",
+    "solution": "Re5+",
+    "theme": "skewer",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "b1B3Q1/5K2/5NP1/n7/2p2k1P/3pN2R/1B1P4/4qn2 w - - 0 1",
+    "solution": "Qf6+",
+    "theme": "discovered attack",
+    "difficulty": "hard"
+  },
+  {
+    "fen": "1k6/1P5Q/8/7B/8/5K2/8/8 w - - 0 1",
+    "solution": "Qh8+",
+    "theme": "mate in 2",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "6Q1/1Nn5/2p1rp2/2p5/2r1k2P/2PN3K/4PP2/1B2R3 w - - 0 1",
+    "solution": "Qg5+",
+    "theme": "double attack",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "8/8/7N/3p2pk/3p2p1/3P4/P1K5/8 w - - 0 1",
+    "solution": "Nf5+",
+    "theme": "fork",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "1n3NR1/2B1R3/2pK1p2/2N2p2/5kbp/1r1p4/3ppr2/4b1QB w - - 0 1",
+    "solution": "Ne6+",
+    "theme": "discovered check",
+    "difficulty": "hard"
+  },
+  {
+    "fen": "K1B5/P2r4/1p1r1n2/4k3/8/3PPP2/8/8 w - - 0 1",
+    "solution": "f4",
+    "theme": "breakthrough",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "8/1P5B/8/2P5/8/6K1/NkP3p1/RN6 w - - 0 1",
+    "solution": "Ra6",
+    "theme": "promotion threat",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "8/8/5b2/8/8/5pk1/8/2BQK2R w - - 0 1",
+    "solution": "Qxf3+",
+    "theme": "capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "3N4/4BPP1/5Kpp/1BPp1Q1b/1p1kq2R/2b1r2n/1p1ppr2/8 w - - 0 1",
+    "solution": "Qxe4+",
+    "theme": "central clearance",
+    "difficulty": "hard"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
+    "solution": "Nc3",
+    "theme": "development",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center control",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+    "solution": "Nf6",
+    "theme": "development",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3B4/PPP2PPP/RNBQK1NR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3B1N2/PPP2PPP/RNBQK2R b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/2N2N2/PPP2PPP/R1BQKB1R b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/2N2P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/2N2P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 3",
+    "solution": "exd4",
+    "theme": "center capture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/3N1P2/PPP3PP/R1BQKBNR b KQkq - 0 4",
+    "solution": "exd4",
+    "theme": "center tension",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "2r3rk/1bq2ppp/p1n1p3/1p1pP3/3P4/2N2N2/PPQ2PPP/2R2RK1 w - - 0 1",
+    "solution": "Ng5",
+    "theme": "attack buildup",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "r1bq1rk1/ppp2ppp/2n2n2/3p4/3P4/2P1PN2/PP3PPP/RNBQ1RK1 w - - 0 1",
+    "solution": "c4",
+    "theme": "center expansion",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r2q1rk1/ppp2ppp/2n2n2/3p4/3P4/2P1PN2/PP3PPP/R1BQ1RK1 w - - 0 1",
+    "solution": "b3",
+    "theme": "queenside prep",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQK2R w KQkq - 0 1",
+    "solution": "O-O",
+    "theme": "castling",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQ1RK1 b kq - 0 1",
+    "solution": "O-O",
+    "theme": "castling",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQ1RK1 w kq - 0 1",
+    "solution": "d4",
+    "theme": "center control",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQ1RK1 b kq - 0 1",
+    "solution": "d6",
+    "theme": "solid setup",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQ1RK1 w kq - 0 1",
+    "solution": "Re1",
+    "theme": "central rook",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 b kq - 0 1",
+    "solution": "O-O",
+    "theme": "castling",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 w kq - 0 1",
+    "solution": "Bg5",
+    "theme": "pin",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 b kq - 0 1",
+    "solution": "h6",
+    "theme": "anti-pin",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 w kq - 0 1",
+    "solution": "Bh4",
+    "theme": "retreat",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 b kq - 0 1",
+    "solution": "g5",
+    "theme": "pawn storm",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 w kq - 0 1",
+    "solution": "Nxg5",
+    "theme": "sacrifice",
+    "difficulty": "hard"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/P1P2PPP/RNBQR1K1 b kq - 0 1",
+    "solution": "hxg5",
+    "theme": "recapture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 w kq - 0 1",
+    "solution": "Nxg5",
+    "theme": "tactical shot",
+    "difficulty": "hard"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 b kq - 0 1",
+    "solution": "d6",
+    "theme": "defensive",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 w kq - 0 1",
+    "solution": "Qf3",
+    "theme": "attack setup",
+    "difficulty": "medium"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 b kq - 0 1",
+    "solution": "Be6",
+    "theme": "development",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 w kq - 0 1",
+    "solution": "Bxe6",
+    "theme": "exchange",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 b kq - 0 1",
+    "solution": "fxe6",
+    "theme": "recapture",
+    "difficulty": "easy"
+  },
+  {
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/6B1/2B1P3/2P2N2/P1P2PPP/RN1QR1K1 w kq - 0 1",
+    "solution": "Qh5+",
+    "theme": "check",
+    "difficulty": "medium"
   }
 ]
