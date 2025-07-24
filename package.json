@@ -1,5 +1,8 @@
 {
   "scripts": {
-    "start": "node ./games/Chess/server.js"
+    "start": "node games/Chess/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
   }
 }
