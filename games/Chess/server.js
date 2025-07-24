@@ -3,12 +3,10 @@ const http = require('http');
 const WebSocket = require('ws');
 const Chess = require('chess.js').Chess;
 const path = require("path");
-const cors = require("cors");
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-app.use(cors());
-app.use(express.static(__dirname));
 
 / Handle GET /
 app.get("/", (req, res) => {
