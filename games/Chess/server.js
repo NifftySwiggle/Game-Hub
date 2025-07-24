@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "chessV1.html"));
 });
 
-const PORT = process.env.PORT || 1000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Chess server running at ${PORT}/`);
 });
