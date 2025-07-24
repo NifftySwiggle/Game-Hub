@@ -4,10 +4,10 @@ const WebSocket = require('ws');
 const Chess = require('chess.js').Chess;
 const path = require("path");
 const cors = require("cors");
-
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
 app.use(cors());
 app.use(express.static(__dirname));
 
@@ -17,8 +17,8 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Chess server running at ${PORT}/`);
+server.listen(PORT, () => {
+  console.log(`Server running at https://game-hub-fnqa.onrender.com`);
 });
 
 const games = {};
@@ -229,5 +229,3 @@ function broadcastLobby() {
     }
   });
 }
-
-server.listen(8080, () => console.log('Server running on http://localhost:8080/chessV1.html'));
