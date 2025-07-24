@@ -3,19 +3,22 @@ const http = require('http');
 const WebSocket = require('ws');
 const Chess = require('chess.js').Chess;
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+app.use(cors());
+app.use(express.static(__dirname));
 
 / Handle GET /
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "chessV1.html"));
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => {
-  console.log(`Chess server running at http://localhost:${PORT}/`);
+  console.log(`Chess server running at ${PORT}/`);
 });
 
 const games = {};
