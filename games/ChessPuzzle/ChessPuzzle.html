@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Puzzle Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding: 2vw;
+            background-color: #2c3e50;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2vw;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: min(90vw, 90vh, 400px);
+            height: min(90vw, 90vh, 400px);
+            border: 2px solid #2c3e50;
+            background-color: #fff;
+            margin: 2vw;
+        }
+        .square {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: calc(min(90vw, 90vh, 400px) / 12);
+            transition: background-color 0.3s ease;
+            user-select: none;
+        }
+        .square:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .light-square {
+            background-color: #eeeed2;
+        }
+        .dark-square {
+            background-color: #769656;
+        }
+        .selected {
+            background-color: rgba(255, 255, 0, 0.3);
+        }
+        .piece-symbol {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: calc(min(90vw, 90vh, 400px) / 12);
+            pointer-events: none;
+        }
+        .pieces {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 2vw;
+            padding: 1vw;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: min(90vw, 400px);
+            justify-content: center;
+        }
+        .piece {
+            width: calc(min(90vw, 400px) / 8);
+            height: calc(min(90vw, 400px) / 8);
+            margin: 0.5vw;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: calc(min(90vw, 400px) / 10);
+            transition: transform 0.2s ease;
+        }
+        .piece:hover {
+            transform: scale(1.1);
+        }
+        .piece:active {
+            transform: scale(0.95);
+        }
+        .selected-piece {
+            border: 2px solid #2c3e50;
+        }
+        form {
+            margin: 2vw;
+            display: flex;
+            flex-direction: column;
+            width: min(90vw, 300px);
+            background-color: #fff;
+            padding: 1.5vw;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        form label {
+            margin-top: 1vw;
+            font-weight: bold;
+            font-size: calc(min(90vw, 16px));
+        }
+        form input, form textarea {
+            padding: 0.8vw;
+            font-size: calc(min(90vw, 16px));
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 0.5vw;
+        }
+        form textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        form button {
+            margin-top: 1.5vw;
+            padding: 1vw;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: calc(min(90vw, 16px));
+        }
+        form button:hover {
+            background-color: #34495e;
+        }
+        .saved-puzzles {
+            margin: 2vw;
+            width: min(90vw, 300px);
+            background-color: #fff;
+            padding: 1.5vw;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .saved-puzzles ul {
+            list-style: none;
+            padding: 0;
+            margin: 1vw 0 0 0;
+        }
+        .saved-puzzles li {
+            padding: 0.8vw;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+            font-size: calc(min(90vw, 14px));
+        }
+        .saved-puzzles li:hover {
+            background-color: #f8f9fa;
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 3vw;
+            }
+            main {
+                padding: 3vw;
+            }
+            .board {
+                width: min(95vw, 95vh);
+                height: min(95vw, 95vh);
+            }
+            .pieces {
+                padding: 2vw;
+            }
+            form, .saved-puzzles {
+                padding: 2vw;
+            }
+            form input, form textarea, form button, .saved-puzzles li {
+                font-size: calc(min(95vw, 14px));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Chess Puzzle Creator</h1>
+    </header>
+    <main>
+        <div class="board"></div>
+        <div class="pieces"></div>
+        <form>
+            <label for="title">Title:</label>
+            <input type="text" id="title" placeholder="Enter puzzle title">
+            <label for="description">Description:</label>
+            <textarea id="description" placeholder="Describe the puzzle or solution"></textarea>
+            <label>Turn:</label>
+            <div>
+                <input type="radio" name="turn" value="white" checked> White
+                <input type="radio" name="turn" value="black"> Black
+            </div>
+            <button type="button" id="save">Save Puzzle</button>
+            <button type="button" id="reset">Reset Board</button>
+            <button type="button" id="export">Export Puzzle</button>
+            <button type="button" id="share">Share on X</button>
+        </form>
+        <div class="saved-puzzles">
+            <h2>Saved Puzzles</h2>
+            <ul id="puzzle-list"></ul>
+        </div>
+        <canvas id="boardCanvas" style="display: none;"></canvas>
+    </main>
+    <script>
+        // DOM elements
+        const boardContainer = document.querySelector('.board');
+        const piecesContainer = document.querySelector('.pieces');
+        const puzzleList = document.querySelector('#puzzle-list');
+        const titleInput = document.querySelector('#title');
+        const descriptionInput = document.querySelector('#description');
+        const saveButton = document.querySelector('#save');
+        const resetButton = document.querySelector('#reset');
+        const exportButton = document.querySelector('#export');
+        const shareButton = document.querySelector('#share');
+
+        // Board state and variables
+        let board = Array(8).fill().map(() => Array(8).fill(null));
+        let selectedPieceType = null;
+        let selectedPosition = null;
+
+        // Piece definitions
+        const pieces = [
+            { type: 'wk', symbol: '♔' }, // White King
+            { type: 'wq', symbol: '♕' }, // White Queen
+            { type: 'wr', symbol: '♖' }, // White Rook
+            { type: 'wb', symbol: '♗' }, // White Bishop
+            { type: 'wn', symbol: '♘' }, // White Knight
+            { type: 'wp', symbol: '♙' }, // White Pawn
+            { type: 'bk', symbol: '♚' }, // Black King
+            { type: 'bq', symbol: '♛' }, // Black Queen
+            { type: 'br', symbol: '♜' }, // Black Rook
+            { type: 'bb', symbol: '♝' }, // Black Bishop
+            { type: 'bn', symbol: '♞' }, // Black Knight
+            { type: 'bp', symbol: '♟' }  // Black Pawn
+        ];
+
+        const pieceToFen = {
+            'wk': 'K', 'wq': 'Q', 'wr': 'R', 'wb': 'B', 'wn': 'N', 'wp': 'P',
+            'bk': 'k', 'bq': 'q', 'br': 'r', 'bb': 'b', 'bn': 'n', 'bp': 'p'
+        };
+
+        // Initialize board
+        function createBoard() {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((row + col) % 2 === 0 ? 'light-square' : 'dark-square');
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    boardContainer.appendChild(square);
+                }
+            }
+        }
+
+        // Initialize piece selection
+        function createPieces() {
+            pieces.forEach(piece => {
+                const pieceDiv = document.createElement('div');
+                pieceDiv.classList.add('piece');
+                pieceDiv.dataset.piece = piece.type;
+                pieceDiv.innerHTML = piece.symbol;
+                piecesContainer.appendChild(pieceDiv);
+            });
+        }
+
+        // Render board state
+        function renderBoard() {
+            document.querySelectorAll('.square').forEach(square => {
+                const row = parseInt(square.dataset.row);
+                const col = parseInt(square.dataset.col);
+                const piece = board[row][col];
+                square.innerHTML = piece ? `<span class="piece-symbol">${pieces.find(p => p.type === piece).symbol}</span>` : '';
+                square.classList.remove('selected');
+                if (selectedPosition && selectedPosition.row === row && selectedPosition.col === col) {
+                    square.classList.add('selected');
+                }
+            });
+        }
+
+        // Handle piece selection from pieces container
+        piecesContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('piece')) {
+                selectedPieceType = e.target.dataset.piece;
+                selectedPosition = null;
+                document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+                e.target.classList.add('selected-piece');
+            }
+        });
+
+        // Handle board interactions
+        boardContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('square')) {
+                const row = parseInt(e.target.dataset.row);
+                const col = parseInt(e.target.dataset.col);
+                if (selectedPieceType) {
+                    board[row][col] = selectedPieceType;
+                    selectedPieceType = null;
+                    document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+                } else {
+                    if (selectedPosition) {
+                        if (selectedPosition.row === row && selectedPosition.col === col) {
+                            board[row][col] = null;
+                            selectedPosition = null;
+                        } else if (!board[row][col]) {
+                            board[row][col] = board[selectedPosition.row][selectedPosition.col];
+                            board[selectedPosition.row][selectedPosition.col] = null;
+                            selectedPosition = null;
+                        }
+                    } else if (board[row][col]) {
+                        selectedPosition = { row, col };
+                    }
+                }
+                renderBoard();
+            }
+        });
+
+        // Generate FEN string
+        function generateFen() {
+            let fen = '';
+            for (let row = 0; row < 8; row++) {
+                let emptyCount = 0;
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece) {
+                        if (emptyCount > 0) {
+                            fen += emptyCount;
+                            emptyCount = 0;
+                        }
+                        fen += pieceToFen[piece];
+                    } else {
+                        emptyCount++;
+                    }
+                }
+                if (emptyCount > 0) {
+                    fen += emptyCount;
+                }
+                if (row < 7) fen += '/';
+            }
+            const turn = document.querySelector('input[name="turn"]:checked').value;
+            const activeColor = turn === 'white' ? 'w' : 'b';
+            fen += ` ${activeColor} - - 0 1`;
+            return fen;
+        }
+
+        // Wrap text for canvas
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            const lines = [];
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], x, y + i * lineHeight);
+            }
+            return lines.length * lineHeight;
+        }
+
+        // Generate board image for export
+        function generateBoardImage(title, description, turn) {
+            const canvas = document.getElementById('boardCanvas');
+            const ctx = canvas.getContext('2d');
+            const squareSize = 100;
+            canvas.width = 800;
+            canvas.height = 1000; // Extra space for text
+            
+            // Clear canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw board
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    ctx.fillStyle = (row + col) % 2 === 0 ? '#eeeed2' : '#769656';
+                    ctx.fillRect(col * squareSize, row * squareSize, squareSize, squareSize);
+                }
+            }
+            
+            // Draw pieces
+            ctx.fillStyle = '#000000';
+            ctx.font = '80px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece) {
+                        const symbol = pieces.find(p => p.type === piece).symbol;
+                        ctx.fillText(symbol, (col + 0.5) * squareSize, (row + 0.5) * squareSize);
+                    }
+                }
+            }
+            
+            // Draw text
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText(title || 'Chess Puzzle', 10, 820);
+            
+            ctx.font = '16px Arial';
+            const descriptionHeight = wrapText(ctx, description || 'No description provided', 10, 860, 780, 20);
+            
+            ctx.font = '16px Arial';
+            ctx.fillText(`Turn to Move: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`, 10, 860 + descriptionHeight + 20);
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        // Save puzzle to local storage
+        saveButton.addEventListener('click', () => {
+            const title = titleInput.value.trim();
+            if (!title) {
+                alert('Please enter a title.');
+                return;
+            }
+            const description = descriptionInput.value;
+            const turn = document.querySelector('input[name="turn"]:checked').value;
+            const puzzle = { title, description, turn, board: board.map(row => [...row]) };
+            localStorage.setItem(title, JSON.stringify(puzzle));
+            loadSavedPuzzles();
+            alert('Puzzle saved successfully!');
+        });
+
+        // Reset board
+        resetButton.addEventListener('click', () => {
+            board = Array(8).fill().map(() => Array(8).fill(null));
+            selectedPosition = null;
+            selectedPieceType = null;
+            document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+            renderBoard();
+        });
+
+        // Export puzzle as PNG
+        exportButton.addEventListener('click', () => {
+            const title = titleInput.value.trim();
+            if (!title) {
+                alert('Please enter a title.');
+                return;
+            }
+            const description = descriptionInput.value;
+            const turn = document.querySelector('input[name="turn"]:checked').value;
+            const imageData = generateBoardImage(title, description, turn);
+            
+            // Download PNG
+            const a = document.createElement('a');
+            a.href = imageData;
+            a.download = `${title}_puzzle.png`;
+            a.click();
+        });
+
+        // Share on X
+        shareButton.addEventListener('click', () => {
+            const title = titleInput.value.trim();
+            if (!title) {
+                alert('Please enter a title.');
+                return;
+            }
+            const description = descriptionInput.value;
+            const fen = generateFen();
+            const turn = document.querySelector('input[name="turn"]:checked').value;
+            const imageUrl = `https://backscattering.de/web-boardimage/board.png?fen=${encodeURIComponent(fen)}`;
+            const text = `Check out my Chess Puzzle created with the @strategicplay_ Chess Puzzle Creator
+${description}
+${turn} moves next
+
+${imageUrl}`;
+ const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        });
+
+        // Load and display saved puzzles
+        function loadSavedPuzzles() {
+            puzzleList.innerHTML = '';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                try {
+                    const puzzle = JSON.parse(localStorage.getItem(key));
+                    if (puzzle && puzzle.title && puzzle.description !== undefined && puzzle.turn && Array.isArray(puzzle.board) && puzzle.board.length === 8) {
+                        const li = document.createElement('li');
+                        li.textContent = puzzle.title;
+                        li.addEventListener('click', () => {
+                            titleInput.value = puzzle.title;
+                            descriptionInput.value = puzzle.description;
+                            document.querySelector(`input[name="turn"][value="${puzzle.turn}"]`).checked = true;
+                            board = puzzle.board.map(row => [...row]);
+                            selectedPosition = null;
+                            selectedPieceType = null;
+                            document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+                            renderBoard();
+                        });
+                        puzzleList.appendChild(li);
+                    }
+                } catch (e) {
+                    // Skip invalid entries
+                }
+            }
+        }
+
+        // Initialize
+        createBoard();
+        createPieces();
+        renderBoard();
+        loadSavedPuzzles();
+    </script>
+</body>
+</html>
