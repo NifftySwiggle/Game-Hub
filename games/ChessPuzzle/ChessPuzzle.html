@@ -27,6 +27,12 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+        .board-wrapper {
+            display: grid;
+            grid-template-columns: 30px min(90vw, 90vh, 400px) 30px;
+            grid-template-rows: 30px min(90vw, 90vh, 400px) 30px;
+            margin: 2vw;
+        }
         .board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -34,7 +40,8 @@
             height: min(90vw, 90vh, 400px);
             border: 2px solid #2c3e50;
             background-color: #fff;
-            margin: 2vw;
+            grid-column: 2;
+            grid-row: 2;
         }
         .square {
             position: relative;
@@ -64,6 +71,23 @@
             transform: translate(-50%, -50%);
             font-size: calc(min(90vw, 90vh, 400px) / 12);
             pointer-events: none;
+        }
+        .neo-piece {
+            font-weight: bold;
+        }
+        .coordinate {
+            position: absolute;
+            font-size: calc(min(90vw, 90vh, 400px) / 24);
+            color: #333333;
+            user-select: none;
+        }
+        .number {
+            top: 2px;
+            left: 2px;
+        }
+        .letter {
+            bottom: 2px;
+            right: 2px;
         }
         .pieces {
             display: flex;
@@ -111,7 +135,7 @@
             font-weight: bold;
             font-size: calc(min(90vw, 16px));
         }
-        form input, form textarea {
+        form input, form textarea, form select {
             padding: 0.8vw;
             font-size: calc(min(90vw, 16px));
             border: 1px solid #ddd;
@@ -155,9 +179,20 @@
             border-bottom: 1px solid #eee;
             transition: background-color 0.3s ease;
             font-size: calc(min(90vw, 14px));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .saved-puzzles li:hover {
             background-color: #f8f9fa;
+        }
+        .delete-btn {
+            color: #e74c3c;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        .delete-btn:hover {
+            color: #c0392b;
         }
         @media (max-width: 600px) {
             header {
@@ -166,9 +201,16 @@
             main {
                 padding: 3vw;
             }
+            .board-wrapper {
+                grid-template-columns: 20px min(95vw, 95vh) 20px;
+                grid-template-rows: 20px min(95vw, 95vh) 20px;
+            }
             .board {
                 width: min(95vw, 95vh);
                 height: min(95vw, 95vh);
+            }
+            .coordinate {
+                font-size: calc(min(95vw, 95vh, 400px) / 28);
             }
             .pieces {
                 padding: 2vw;
@@ -176,7 +218,7 @@
             form, .saved-puzzles {
                 padding: 2vw;
             }
-            form input, form textarea, form button, .saved-puzzles li {
+            form input, form textarea, form select, form button, .saved-puzzles li {
                 font-size: calc(min(95vw, 14px));
             }
         }
@@ -184,16 +226,32 @@
 </head>
 <body>
     <header>
-        <h1>Chess Puzzle Creator</h1>
+        <h1>Strategic Play Chess Puzzle Creator</h1>
     </header>
     <main>
-        <div class="board"></div>
+        <div class="board-wrapper">
+            <div class="coordinates letters top"></div>
+            <div class="coordinates numbers left"></div>
+            <div class="board"></div>
+            <div class="coordinates numbers right"></div>
+            <div class="coordinates letters bottom"></div>
+        </div>
         <div class="pieces"></div>
         <form>
+            <div style="text-align: center;">           
+            <button type="button" id="fill">Fill Board</button>
+            <button type="button" id="clear">Clear Board</button>
+            </div>
             <label for="title">Title:</label>
             <input type="text" id="title" placeholder="Enter puzzle title">
             <label for="description">Description:</label>
             <textarea id="description" placeholder="Describe the puzzle or solution"></textarea>
+            <label for="theme">Piece Theme:</label>
+            <select id="theme">
+                <option value="default">Default</option>
+                <option value="staunton">Staunton</option>
+                <option value="neo">Neo</option>
+            </select>
             <label>Turn:</label>
             <div>
                 <input type="radio" name="turn" value="white" checked> White
@@ -217,7 +275,10 @@
         const puzzleList = document.querySelector('#puzzle-list');
         const titleInput = document.querySelector('#title');
         const descriptionInput = document.querySelector('#description');
+        const themeSelect = document.querySelector('#theme');
         const saveButton = document.querySelector('#save');
+        const fillButton = document.querySelector('#fill');
+        const clearButton = document.querySelector('#clear');
         const resetButton = document.querySelector('#reset');
         const exportButton = document.querySelector('#export');
         const shareButton = document.querySelector('#share');
@@ -226,27 +287,64 @@
         let board = Array(8).fill().map(() => Array(8).fill(null));
         let selectedPieceType = null;
         let selectedPosition = null;
+        let currentTheme = 'default';
+
+        // Piece themes
+        const pieceThemes = {
+            default: {
+                wk: '♔', wq: '♕', wr: '♖', wb: '♗', wn: '♘', wp: '♙',
+                bk: '♚', bq: '♛', br: '♜', bb: '♝', bn: '♞', bp: '♟'
+            },
+            staunton: {
+                wk: '🨁', wq: '🨂', wr: '🨃', wb: '🨄', wn: '🨅', wp: '🨆',
+                bk: '🨑', bq: '🨒', br: '🨓', bb: '🨔', bn: '🨕', bp: '🨖'
+            },
+            neo: {
+                wk: '♔', wq: '♕', wr: '♖', wb: '♗', wn: '♘', wp: '♙',
+                bk: '♚', bq: '♛', br: '♜', bb: '♝', bn: '♞', bp: '♟',
+                cssClass: 'neo-piece'
+            }
+        };
 
         // Piece definitions
-        const pieces = [
-            { type: 'wk', symbol: '♔' }, // White King
-            { type: 'wq', symbol: '♕' }, // White Queen
-            { type: 'wr', symbol: '♖' }, // White Rook
-            { type: 'wb', symbol: '♗' }, // White Bishop
-            { type: 'wn', symbol: '♘' }, // White Knight
-            { type: 'wp', symbol: '♙' }, // White Pawn
-            { type: 'bk', symbol: '♚' }, // Black King
-            { type: 'bq', symbol: '♛' }, // Black Queen
-            { type: 'br', symbol: '♜' }, // Black Rook
-            { type: 'bb', symbol: '♝' }, // Black Bishop
-            { type: 'bn', symbol: '♞' }, // Black Knight
-            { type: 'bp', symbol: '♟' }  // Black Pawn
+        let pieces = [
+            { type: 'wk', symbol: pieceThemes.default.wk },
+            { type: 'wq', symbol: pieceThemes.default.wq },
+            { type: 'wr', symbol: pieceThemes.default.wr },
+            { type: 'wb', symbol: pieceThemes.default.wb },
+            { type: 'wn', symbol: pieceThemes.default.wn },
+            { type: 'wp', symbol: pieceThemes.default.wp },
+            { type: 'bk', symbol: pieceThemes.default.bk },
+            { type: 'bq', symbol: pieceThemes.default.bq },
+            { type: 'br', symbol: pieceThemes.default.br },
+            { type: 'bb', symbol: pieceThemes.default.bb },
+            { type: 'bn', symbol: pieceThemes.default.bn },
+            { type: 'bp', symbol: pieceThemes.default.bp }
         ];
 
         const pieceToFen = {
             'wk': 'K', 'wq': 'Q', 'wr': 'R', 'wb': 'B', 'wn': 'N', 'wp': 'P',
             'bk': 'k', 'bq': 'q', 'br': 'r', 'bb': 'b', 'bn': 'n', 'bp': 'p'
         };
+
+        // Update piece symbols based on theme
+        function updatePieceSymbols(theme) {
+            pieces = pieces.map(piece => ({
+                type: piece.type,
+                symbol: pieceThemes[theme][piece.type]
+            }));
+            document.querySelectorAll('.piece').forEach(pieceDiv => {
+                const pieceType = pieceDiv.dataset.piece;
+                const symbol = pieces.find(p => p.type === pieceType).symbol;
+                pieceDiv.innerHTML = symbol;
+                if (pieceThemes[theme].cssClass) {
+                    pieceDiv.classList.add(pieceThemes[theme].cssClass);
+                } else {
+                    pieceDiv.classList.remove('neo-piece');
+                }
+            });
+            renderBoard();
+        }
 
         // Initialize board
         function createBoard() {
@@ -278,8 +376,29 @@
             document.querySelectorAll('.square').forEach(square => {
                 const row = parseInt(square.dataset.row);
                 const col = parseInt(square.dataset.col);
+                square.innerHTML = ''; // Clear existing content
+                if (col === 0) { // Left border for numbers
+                    const number = document.createElement('span');
+                    number.classList.add('coordinate', 'number');
+                    number.textContent = 8 - row; // Numbers 8 to 1 from top
+                    square.appendChild(number);
+                }
+                if (row === 7) { // Bottom border for letters
+                    const letter = document.createElement('span');
+                    letter.classList.add('coordinate', 'letter');
+                    letter.textContent = String.fromCharCode(97 + col); // Letters a to h
+                    square.appendChild(letter);
+                }
                 const piece = board[row][col];
-                square.innerHTML = piece ? `<span class="piece-symbol">${pieces.find(p => p.type === piece).symbol}</span>` : '';
+                if (piece) {
+                    const pieceSpan = document.createElement('span');
+                    pieceSpan.classList.add('piece-symbol');
+                    if (pieceThemes[currentTheme].cssClass) {
+                        pieceSpan.classList.add(pieceThemes[currentTheme].cssClass);
+                    }
+                    pieceSpan.textContent = pieces.find(p => p.type === piece).symbol;
+                    square.appendChild(pieceSpan);
+                }
                 square.classList.remove('selected');
                 if (selectedPosition && selectedPosition.row === row && selectedPosition.col === col) {
                     square.classList.add('selected');
@@ -322,6 +441,12 @@
                 }
                 renderBoard();
             }
+        });
+
+        // Handle theme change
+        themeSelect.addEventListener('change', () => {
+            currentTheme = themeSelect.value;
+            updatePieceSymbols(currentTheme);
         });
 
         // Generate FEN string
@@ -380,8 +505,8 @@
             const canvas = document.getElementById('boardCanvas');
             const ctx = canvas.getContext('2d');
             const squareSize = 100;
-            canvas.width = 800;
-            canvas.height = 1000; // Extra space for text
+            canvas.width = 1000;
+            canvas.height = 1200; // Space for coordinates and text
             
             // Clear canvas
             ctx.fillStyle = '#ffffff';
@@ -391,8 +516,23 @@
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
                     ctx.fillStyle = (row + col) % 2 === 0 ? '#eeeed2' : '#769656';
-                    ctx.fillRect(col * squareSize, row * squareSize, squareSize, squareSize);
+                    ctx.fillRect(100 + col * squareSize, 100 + row * squareSize, squareSize, squareSize);
                 }
+            }
+            
+            // Draw coordinates on border squares
+            ctx.fillStyle = '#333333';
+            ctx.font = '14px Arial'; // Increased font size for readability
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let row = 0; row < 8; row++) {
+                ctx.fillText(8 - row, 100 + 5, 100 + row * squareSize + 5); // Left border numbers (8 to 1)
+            }
+            ctx.textAlign = 'right'; // Align letters to bottom-right
+            ctx.textBaseline = 'bottom';
+            for (let col = 0; col < 8; col++) {
+                ctx.fillText(letters[col], 100 + (col + 1) * squareSize - 5, 100 + 7 * squareSize + 95); // Bottom-right letters
             }
             
             // Draw pieces
@@ -405,7 +545,7 @@
                     const piece = board[row][col];
                     if (piece) {
                         const symbol = pieces.find(p => p.type === piece).symbol;
-                        ctx.fillText(symbol, (col + 0.5) * squareSize, (row + 0.5) * squareSize);
+                        ctx.fillText(symbol, 100 + (col + 0.5) * squareSize, 100 + (row + 0.5) * squareSize);
                     }
                 }
             }
@@ -414,15 +554,20 @@
             ctx.fillStyle = '#000000';
             ctx.textAlign = 'left';
             ctx.font = 'bold 24px Arial';
-            ctx.fillText(title || 'Chess Puzzle', 10, 820);
+            ctx.fillText(title || 'Chess Puzzle', 10, 1000);
             
             ctx.font = '16px Arial';
-            const descriptionHeight = wrapText(ctx, description || 'No description provided', 10, 860, 780, 20);
+            const descriptionHeight = wrapText(ctx, description || 'No description provided', 10, 1040, 980, 20);
             
             ctx.font = '16px Arial';
-            ctx.fillText(`Turn to Move: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`, 10, 860 + descriptionHeight + 20);
+            ctx.fillText(`Turn to Move: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`, 10, 1040 + descriptionHeight + 20);
             
             return canvas.toDataURL('image/png');
+        }
+
+        // Generate image for tweet (same as export)
+        function generateTweetImage(title, description, turn) {
+            return generateBoardImage(title, description, turn);
         }
 
         // Save puzzle to local storage
@@ -433,11 +578,35 @@
                 return;
             }
             const description = descriptionInput.value;
-            const turn = document.querySelector('input[name="turn"]:checked').value;
-            const puzzle = { title, description, turn, board: board.map(row => [...row]) };
+            const turn = document.queryselector('input[name="turn"]:checked').value;
+            const puzzle = { title, description, turn, board: board.map(row => [...row]), theme: currentTheme };
             localStorage.setItem(title, JSON.stringify(puzzle));
             loadSavedPuzzles();
             alert('Puzzle saved successfully!');
+        });
+
+        // Fill board with traditional chess setup
+        fillButton.addEventListener('click', () => {
+            board = Array(8).fill().map(() => Array(8).fill(null));
+            // White pieces (rank 0 and 1)
+            board[0] = ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr'];
+            board[1] = Array(8).fill('wp');
+            // Black pieces (rank 6 and 7)
+            board[6] = Array(8).fill('bp');
+            board[7] = ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'];
+            selectedPosition = null;
+            selectedPieceType = null;
+            document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+            renderBoard();
+        });
+
+        // Clear board
+        clearButton.addEventListener('click', () => {
+            board = Array(8).fill().map(() => Array(8).fill(null));
+            selectedPosition = null;
+            selectedPieceType = null;
+            document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
+            renderBoard();
         });
 
         // Reset board
@@ -474,20 +643,44 @@
                 alert('Please enter a title.');
                 return;
             }
-            const description = descriptionInput.value;
-            const fen = generateFen();
+            const description = descriptionInput.value || 'No description provided';
             const turn = document.querySelector('input[name="turn"]:checked').value;
-            const imageUrl = `https://backscattering.de/web-boardimage/board.png?fen=${encodeURIComponent(fen)}`;
-            const text = `Check out my Chess Puzzle created with the @strategicplay_ Chess Puzzle Creator
-${description}
-${turn} moves next
-
-${imageUrl}`;
- const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
+            const imageData = generateTweetImage(title, description, turn);
+            const text = `${description}\n${turn} moves next\n\nThis Chess Puzzle was created with @strategicplay_ Puzzle Creator!`;
+            const encodedText = encodeURIComponent(text);
+            if (encodedText.length > 280) {
+                // Fallback to manual upload due to large image size
+                const a = document.createElement('a');
+                a.href = imageData;
+                a.download = `${title}_tweet.png`;
+                a.click();
+                const fallbackText = `${description}\n${turn} moves next\n\nThis Chess Puzzle was created with @strategicplay_ Puzzle Creator!`;
+                const encodedFallbackText = encodeURIComponent(fallbackText.substring(0, 280)); // Truncate to 280 characters
+                const url = `https://twitter.com/intent/tweet?text=${encodedFallbackText}`;
+                window.open(url, '_blank');
+                alert('Image size too large for auto-upload. Image downloaded. Please upload it manually to your tweet.');
+            } else {
+                // Attempt to share with image
+                const url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+                window.open(url, '_blank');
+                setTimeout(() => {
+                    if (!document.hasFocus()) {
+                        // If the window fails to open (e.g., 520 error), fallback
+                        const a = document.createElement('a');
+                        a.href = imageData;
+                        a.download = `${title}_tweet.png`;
+                        a.click();
+                        const fallbackText = `${description}\n${turn} moves next\n\nThis Chess Puzzle was created with @strategicplay_ Puzzle Creator!`;
+                        const encodedFallbackText = encodeURIComponent(fallbackText.substring(0, 280)); // Truncate to 280 characters
+                        const fallbackUrl = `https://twitter.com/intent/tweet?text=${encodedFallbackText}`;
+                        window.open(fallbackUrl, '_blank');
+                        alert('Auto-upload failed. Image downloaded. Please upload it manually to your tweet.');
+                    }
+                }, 1000);
+            }
         });
 
-        // Load and display saved puzzles
+        // Load and display saved puzzles with delete option
         function loadSavedPuzzles() {
             puzzleList.innerHTML = '';
             for (let i = 0; i < localStorage.length; i++) {
@@ -496,17 +689,33 @@ ${imageUrl}`;
                     const puzzle = JSON.parse(localStorage.getItem(key));
                     if (puzzle && puzzle.title && puzzle.description !== undefined && puzzle.turn && Array.isArray(puzzle.board) && puzzle.board.length === 8) {
                         const li = document.createElement('li');
-                        li.textContent = puzzle.title;
-                        li.addEventListener('click', () => {
+                        const titleSpan = document.createElement('span');
+                        titleSpan.textContent = puzzle.title;
+                        titleSpan.addEventListener('click', () => {
                             titleInput.value = puzzle.title;
                             descriptionInput.value = puzzle.description;
                             document.querySelector(`input[name="turn"][value="${puzzle.turn}"]`).checked = true;
                             board = puzzle.board.map(row => [...row]);
+                            currentTheme = puzzle.theme || 'default';
+                            themeSelect.value = currentTheme;
+                            updatePieceSymbols(currentTheme);
                             selectedPosition = null;
                             selectedPieceType = null;
                             document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected-piece'));
                             renderBoard();
                         });
+                        const deleteSpan = document.createElement('span');
+                        deleteSpan.textContent = '🗑️';
+                        deleteSpan.classList.add('delete-btn');
+                        deleteSpan.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Prevent triggering the title click
+                            if (confirm(`Are you sure you want to delete "${puzzle.title}"?`)) {
+                                localStorage.removeItem(puzzle.title);
+                                loadSavedPuzzles();
+                            }
+                        });
+                        li.appendChild(titleSpan);
+                        li.appendChild(deleteSpan);
                         puzzleList.appendChild(li);
                     }
                 } catch (e) {
@@ -522,4 +731,7 @@ ${imageUrl}`;
         loadSavedPuzzles();
     </script>
 </body>
+<footer align="center" class="py-4">
+<p>&copy; 2025 Strategic Play. All rights reserved.</p>
+<p>Created by NifftySwiggle</p>
 </html>
