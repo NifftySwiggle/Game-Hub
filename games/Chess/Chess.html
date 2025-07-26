@@ -11,26 +11,46 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: Arial, sans-serif; }
+    body { 
+      font-family: Arial, sans-serif; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      margin: 0; 
+      background-color: #f3f4f6; 
+    }
     #boardContainer { 
       width: 100%; 
-      max-width: 400px; 
+      max-width: min(50vw, 500px);
       height: auto; 
       aspect-ratio: 1 / 1; 
       display: flex; 
       justify-content: center; 
       margin: 0 auto;
+      touch-action: none;
     }
     #chessboard { 
       width: 100%; 
-      max-width: 400px; 
+      max-width: min(50vw, 500px);
       height: auto; 
       aspect-ratio: 1 / 1; 
       border: none; 
     }
-    #gameControls, #gameInfo, #tournamentInfo {
+    #gameControls, #tournamentInfo {
       width: 100%;
-      max-width: 400px;
+      max-width: 300px;
+    }
+    #gameInfo {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 10px;
+      text-align: center;
+      width: 100%;
+      max-width: min(50vw, 500px);
     }
     #promotionModal, #onlineMenuModal, #tournamentModal { 
       display: none; 
@@ -57,22 +77,50 @@
     .form-label { display: block; text-align: left; font-weight: bold; margin-bottom: 4px; }
     .main-container {
       width: 100%;
-      max-width: min(1200px, 90vw);
+      max-width: min(1200px, 95vw);
       margin: 0 auto;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
     }
-    @media (max-width: 640px) {
-      #boardContainer, #chessboard { max-width: 360px; min-width: 320px; }
-      #gameControls, #gameInfo, #tournamentInfo { max-width: 360px; }
-      .main-container { max-width: 95vw; }
-      .flex-col.md\\:flex-row { flex-direction: column; }
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      #boardContainer, #chessboard { 
+        max-width: min(90vw, 400px);
+        min-width: 320px;
+      }
+      #gameInfo { 
+        max-width: min(90vw, 400px);
+      }
+      #gameControls, #tournamentInfo { 
+        max-width: 360px;
+      }
+    }
+    footer {
+      margin-top: 20px;
     }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center p-4">
+<body>
   <h1 class="text-4xl font-bold mb-4">Strategic Play Chess Game</h1>
-  <div class="main-container flex flex-col md:flex-row gap-4">
-    <div id="boardContainer">
-      <div id="chessboard"></div>
+  <div class="main-container">
+    <div class="flex flex-col items-center">
+      <div id="boardContainer">
+        <div id="chessboard"></div>
+      </div>
+      <div id="gameInfo" class="bg-white p-4 rounded shadow">
+        <p id="status" class="mb-2 font-semibold">Select a game mode to start</p>
+        <p id="playerColor" class="mb-2">Your Color: White</p>
+        <p id="turn" class="mb-2">Turn: White</p>
+        <p id="whiteTimer" class="mb-2">White: 10:00</p>
+        <p id="blackTimer" class="mb-2">Black: 10:00</p>
+      </div>
     </div>
     <div class="flex flex-col gap-4">
       <div id="gameControls" class="bg-white p-4 rounded shadow">
@@ -81,7 +129,7 @@
         <button id="localMultiplayerBtn" class="bg-green-500 text-white px-4 py-2 rounded mb-2 w-full hover:bg-green-600">Local Multiplayer</button>
         <button id="onlineMultiplayerBtn" class="bg-purple-500 text-white px-4 py-2 rounded mb-2 w-full hover:bg-purple-600">Online Multiplayer</button>
         <button id="puzzleModeBtn" class="bg-yellow-500 text-white px-4 py-2 rounded mb-2 w-full hover:bg-yellow-600">Puzzle Mode</button>
-        <button id="tournamentBtn" class="bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600">Tournament (Coming Soon)</button>
+        <button id="tournamentBtn" class="bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600">Tournament</button>
         <h2 class="text-xl font-semibold mb-2 mt-4">Piece Theme</h2>
         <select id="pieceThemeSelect" class="mb-2">
           <option value="standard" selected>Standard</option>
@@ -90,15 +138,8 @@
           <option value="merida">Soon</option>
         </select>
       </div>
-      <div id="gameInfo" class="bg-white p-4 rounded shadow">
-        <h2 class="text-xl font-semibold mb-2">Game Info</h2>
-        <p id="status" class="mb-2">Select a game mode to start</p>
-        <p id="turn" class="mb-2">Turn: White</p>
-        <p id="fen" class="mb-2 text-sm">FEN: rnbqkbnr/pppppppp/5n5/4p3/4P3/5N5/PPPP1PPP/RNBQKB1R w KQkq - 0 1</p>
-        <p id="pgn" class="text-sm">PGN: </p>
-      </div>
       <div id="tournamentInfo" class="bg-white p-4 rounded shadow hidden">
-        <h2 class="text-xl font-semibold mb-2">Tournament Info</h2>
+        <h2 class="text-xl font-semibold mb-2">Tournament Information</h2>
         <p id="tournamentStatus">No active tournament</p>
       </div>
     </div>
@@ -156,6 +197,14 @@ let tournamentId = null;
 let gameStarted = false;
 let pendingMove = null;
 let availableGames = [];
+let touchStartSquare = null;
+let touchPiece = null;
+let whiteTime = 600;
+let blackTime = 600;
+let timeIncrement = 0;
+let timerInterval = null;
+let currentTurn = 'w';
+
 const pieceThemes = {
   unicode: (piece) => {
     const unicodePieces = {
@@ -202,6 +251,11 @@ document.addEventListener('DOMContentLoaded', function() {
     board.resize();
     window.addEventListener('resize', () => board.resize());
 
+    const boardElement = document.getElementById('chessboard');
+    boardElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    boardElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    boardElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+
     fetch('./puzzles.json')
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch puzzles.json');
@@ -223,6 +277,116 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('Initialization failed:', err);
   }
 });
+
+function formatTime(seconds) {
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!gameStarted || chess.game_over()) {
+      clearInterval(timerInterval);
+      return;
+    }
+    if (currentTurn === 'w') {
+      whiteTime = Math.max(0, whiteTime - 1);
+      if (whiteTime === 0) {
+        $('#status').text('Time out! Black wins!');
+        clearInterval(timerInterval);
+        gameStarted = false;
+      }
+    } else {
+      blackTime = Math.max(0, blackTime - 1);
+      if (blackTime === 0) {
+        $('#status').text('Time out! White wins!');
+        clearInterval(timerInterval);
+        gameStarted = false;
+      }
+    }
+    updateGameInfo();
+  }, 1000);
+}
+
+function getSquareFromEvent(event) {
+  try {
+    const boardElement = document.getElementById('chessboard');
+    const rect = boardElement.getBoundingClientRect();
+    const squareSize = rect.width / 8;
+    let clientX, clientY;
+
+    if (event.type.startsWith('touch')) {
+      const touch = event.changedTouches[0];
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    }
+
+    const x = Math.floor((clientX - rect.left) / squareSize);
+    const y = Math.floor((clientY - rect.top) / squareSize);
+    if (x < 0 || x > 7 || y < 0 || y > 7) return null;
+
+    const file = String.fromCharCode(97 + x);
+    const rank = 8 - y;
+    return file + rank;
+  } catch (err) {
+    console.error('getSquareFromEvent error:', err);
+    return null;
+  }
+}
+
+function handleTouchStart(event) {
+  try {
+    event.preventDefault();
+    const square = getSquareFromEvent(event);
+    if (!square) return;
+
+    const piece = chess.get(square);
+    if (!piece) return;
+
+    touchPiece = piece.color + piece.type;
+    touchStartSquare = square;
+
+    if (!onDragStart(square, touchPiece, chess.fen(), board.orientation())) {
+      touchPiece = null;
+      touchStartSquare = null;
+    }
+  } catch (err) {
+    console.error('handleTouchStart error:', err);
+  }
+}
+
+function handleTouchMove(event) {
+  event.preventDefault();
+}
+
+function handleTouchEnd(event) {
+  try {
+    event.preventDefault();
+    if (!touchStartSquare || !touchPiece) return;
+
+    const targetSquare = getSquareFromEvent(event);
+    if (!targetSquare || targetSquare === touchStartSquare) {
+      touchStartSquare = null;
+      touchPiece = null;
+      return;
+    }
+
+    const result = onDrop(touchStartSquare, targetSquare, touchPiece);
+    if (result !== 'snapback') {
+      onSnapEnd();
+    }
+
+    touchStartSquare = null;
+    touchPiece = null;
+  } catch (err) {
+    console.error('handleTouchEnd error:', err);
+  }
+}
 
 function onDragStart(source, piece, position, orientation) {
   try {
@@ -301,14 +465,24 @@ function makeMove(move) {
     if (result) {
       console.log('Move successful:', result);
       board.position(chess.fen());
-      updateGameInfo();
+      currentTurn = chess.turn();
       if (gameMode === 'online' || gameMode === 'tournament') {
         ws.send(JSON.stringify({ type: 'move', gameId, move }));
+      } else {
+        if (currentTurn === 'w') {
+          whiteTime += timeIncrement;
+        } else {
+          blackTime += timeIncrement;
+        }
+        if ((gameMode === 'computer' || gameMode === 'local') && !puzzleMode) {
+          startTimer();
+        }
       }
       if (gameMode === 'computer' && !chess.game_over() && chess.turn() !== playerColor) {
         setTimeout(computerMove, 500);
       }
       if (puzzleMode) checkPuzzleMove(result);
+      updateGameInfo();
       return;
     } else {
       console.log('Move failed:', move);
@@ -326,6 +500,9 @@ function computerMove() {
     let bestMove = minimax(chess, 3, -Infinity, Infinity, true).move;
     chess.move(bestMove);
     board.position(chess.fen());
+    currentTurn = chess.turn();
+    blackTime += timeIncrement;
+    startTimer();
     updateGameInfo();
   } catch (err) {
     console.error('computerMove error:', err);
@@ -425,9 +602,10 @@ function updateGameInfo() {
       }
     }
     $('#status').text(status);
+    $('#playerColor').text(`Your Color: ${playerColor === 'w' ? 'White' : 'Black'}`);
     $('#turn').text(`Turn: ${chess.turn() === 'w' ? 'White' : 'Black'}`);
-    $('#fen').text(`FEN: ${chess.fen()}`);
-    $('#pgn').text(`PGN: ${chess.pgn()}`);
+    $('#whiteTimer').text(`White: ${formatTime(whiteTime)}`);
+    $('#blackTimer').text(`Black: ${formatTime(blackTime)}`);
   } catch (err) {
     console.error('updateGameInfo error:', err);
   }
@@ -497,6 +675,7 @@ function joinGame(id, isTournament) {
       $('#tournamentInfo').removeClass('hidden');
       $('#tournamentStatus').text(`Joined Tournament ${id}`);
     }
+    updateGameInfo();
   } catch (err) {
     console.error('joinGame error:', err);
   }
@@ -510,7 +689,12 @@ function setupEventListeners() {
       gameMode = 'computer';
       playerColor = 'w';
       gameStarted = true;
+      whiteTime = 600;
+      blackTime = 600;
+      timeIncrement = 0;
+      currentTurn = 'w';
       board.position('start');
+      startTimer();
       updateGameInfo();
       $('#promotionModal').hide();
       $('#tournamentInfo').addClass('hidden');
@@ -521,8 +705,14 @@ function setupEventListeners() {
       console.log('Local Multiplayer button clicked');
       chess.reset();
       gameMode = 'local';
+      playerColor = 'w'; // Default to white, as both sides are played locally
       gameStarted = true;
+      whiteTime = 600;
+      blackTime = 600;
+      timeIncrement = 0;
+      currentTurn = 'w';
       board.position('start');
+      startTimer();
       updateGameInfo();
       $('#promotionModal').hide();
       $('#tournamentInfo').addClass('hidden');
@@ -542,6 +732,9 @@ function setupEventListeners() {
         return;
       }
       gameStarted = true;
+      whiteTime = 600;
+      blackTime = 600;
+      timeIncrement = 0;
       startPuzzleMode();
       $('#onlineMenuModal').hide();
     });
@@ -565,6 +758,9 @@ function setupEventListeners() {
         return;
       }
       const [minutes, increment] = $('#presetSelect').val().split('-').map(Number);
+      whiteTime = minutes * 60;
+      blackTime = minutes * 60;
+      timeIncrement = increment;
       ws.send(JSON.stringify({
         type: 'createGame',
         isTournament: false,
@@ -585,14 +781,16 @@ function setupEventListeners() {
         connectWebSocket();
         return;
       }
+      const minutes = parseInt($('#tournamentMinutes').val());
+      const increment = parseInt($('#tournamentIncrement').val());
+      whiteTime = minutes * 60;
+      blackTime = minutes * 60;
+      timeIncrement = increment;
       ws.send(JSON.stringify({
         type: 'createTournament',
         name: $('#tournamentName').val(),
         rounds: parseInt($('#tournamentRounds').val()),
-        timeControl: {
-          minutes: parseInt($('#tournamentMinutes').val()),
-          increment: parseInt($('#tournamentIncrement').val())
-        }
+        timeControl: { minutes, increment }
       }));
       $('#tournamentModal').hide();
     });
@@ -610,6 +808,10 @@ function setupEventListeners() {
         onSnapEnd: onSnapEnd
       });
       board.resize();
+      const boardElement = document.getElementById('chessboard');
+      boardElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+      boardElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+      boardElement.addEventListener('touchend', handleTouchEnd, { passive: false });
     });
   } catch (err) {
     console.error('setupEventListeners error:', err);
@@ -624,6 +826,7 @@ function startPuzzleMode() {
       chess.load(currentPuzzle.fen);
       playerColor = chess.turn();
       board.position(currentPuzzle.fen);
+      currentTurn = playerColor;
       updateGameInfo();
       $('#status').text(`Puzzle: Find the best move for ${playerColor === 'w' ? 'White' : 'Black'}`);
     } else {
@@ -646,7 +849,7 @@ function checkPuzzleMove(move) {
     } else {
       $('#status').text('Incorrect. Try again.');
       chess.undo();
-      board.position(chess.fen());
+      board.position(chess.fen);
     }
   } catch (err) {
     console.error('checkPuzzleMove error:', err);
@@ -673,6 +876,8 @@ function connectWebSocket() {
           playerColor = data.color || 'w';
           chess.reset();
           board.position('start');
+          currentTurn = 'w';
+          startTimer();
           updateGameInfo();
           $('#onlineMenuModal').hide();
           $('#status').text(`Game ${gameId} created. Waiting for opponent...`);
@@ -703,11 +908,19 @@ function connectWebSocket() {
           playerColor = data.color || playerColor;
           chess.reset();
           board.position('start');
+          currentTurn = 'w';
+          startTimer();
           updateGameInfo();
           $('#status').text(`Game ${gameId} started. You play ${playerColor === 'w' ? 'White' : 'Black'}.`);
         } else if (data.type === 'move') {
           chess.move(data.move);
           board.position(chess.fen());
+          currentTurn = chess.turn();
+          if (data.time) {
+            whiteTime = data.time.white;
+            blackTime = data.time.black;
+          }
+          startTimer();
           updateGameInfo();
         } else if (data.type === 'availableGames' || data.type === 'lobbyData') {
           availableGames = data.games.map(game => ({
@@ -728,6 +941,7 @@ function connectWebSocket() {
         } else if (data.type === 'opponentDisconnected') {
           $('#status').text('Opponent disconnected. Game ended.');
           gameStarted = false;
+          clearInterval(timerInterval);
         }
       } catch (err) {
         console.error('WebSocket message error:', err);
@@ -736,10 +950,12 @@ function connectWebSocket() {
     ws.onclose = () => {
       console.log('Disconnected from WebSocket server');
       $('#status').text('Disconnected from server. Please refresh.');
+      clearInterval(timerInterval);
     };
     ws.onerror = (err) => {
       console.error('WebSocket error:', err);
       $('#status').text('WebSocket error. Please refresh.');
+      clearInterval(timerInterval);
     };
   } catch (err) {
     console.error('connectWebSocket error:', err);
@@ -747,9 +963,9 @@ function connectWebSocket() {
   }
 }
 </script>
-</body>
-</footer>
-<footer align= center class="mt-8 text-center text-gray-600">
+<footer align="center" class="mt-8 text-center text-gray-600">
   <p>&copy; 2025 Strategic Play Chess Game</p>
-  <p>Created by NifftySwiggle <a href="
+  <p>Created by NifftySwiggle</p>
+</footer>
+</body>
 </html>
