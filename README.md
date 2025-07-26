@@ -2,9 +2,9 @@
 
 Welcome to **Game Hub**, a digital arcade of experimental games.
 
-[Visit the game hub](https://niffty.github.io/game-hub) 
+[Visit the game hub](https://nifftyswiggle.github.io/Game-Hub/) 
 
-🔗 `https://niffty.github.io/game-hub` 
+🔗 `https://nifftyswiggle.github.io/Game-Hub/` 
 
 Drop in, play instantly, give feedback, and explore.
 
