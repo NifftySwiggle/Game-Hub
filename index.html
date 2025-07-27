@@ -3,115 +3,493 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NifftySwiggle</title>
+  <title>NifftySwiggle Arcade</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
     body {
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1585506957730-7eade4c6c0e7') no-repeat center center fixed;
+      background-size: cover;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'Arial', sans-serif;
-      color: white;
+      font-family: 'Press Start 2P', cursive;
+      color: #fff;
+      overflow: auto;
+      position: relative;
+      margin: 0;
+    }
+    .arcade-machine {
+      width: 90%;
+      max-width: 1000px;
+      background: linear-gradient(to bottom, #1a1a1a, #333);
+      border: 10px solid #222;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
+      padding: 15px;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .marquee {
+      background: linear-gradient(45deg, #ff0, #f0f);
+      color: #000;
+      text-align: center;
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 12px #ff0;
+      text-shadow: 0 0 5px #fff;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      width: 100%;
+      max-width: 600px;
+    }
+    .arcade-screen {
+      background: #000;
+      border: 6px solid #111;
+      border-radius: 8px;
+      width: 100%;
+      max-height: 50vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.3);
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .arcade-screen::-webkit-scrollbar {
+      display: none;
+    }
+    .arcade-screen::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        rgba(255, 255, 255, 0.05) 0px,
+        rgba(255, 255, 255, 0.05) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+    .game-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 10px;
+      position: relative;
+      z-index: 2;
+      width: 100%;
     }
     .game-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #0ff;
+      border-radius: 6px;
+      padding: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      color: #0ff;
+      text-shadow: 0 0 6px #0ff;
+      position: relative;
+      overflow: hidden;
     }
-    .game-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+      transition: 0.5s;
     }
-    @media (max-width: 640px) {
-      .game-card {
-        width: 100%;
-        max-width: 300px;
+    .game-card:hover::before, .game-card.selected::before {
+      left: 100%;
+    }
+    .game-card:hover, .game-card.selected {
+      background: rgba(0, 255, 255, 0.2);
+      transform: scale(1.03);
+      box-shadow: 0 0 15px #0ff, inset 0 0 8px #0ff;
+      border-color: #ff0;
+    }
+    .game-card h2 {
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+    .game-card p {
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      color: #fff;
+      text-shadow: 0 0 4px #fff;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .control-btn {
+      background: linear-gradient(45deg, #ff0, #f0f);
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff0, inset 0 0 4px #fff;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      border: 2px solid #000;
+    }
+    .control-btn:hover {
+      background: linear-gradient(45deg, #fff, #ff0);
+      box-shadow: 0 0 15px #fff, inset 0 0 6px #fff;
+      transform: scale(1.1);
+    }
+    .control-btn:active {
+      transform: scale(0.95);
+    }
+    .secret-game {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+    }
+    .secret-game.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #snake-canvas {
+      border: 2px solid #0ff;
+      border-radius: 4px;
+      box-shadow: 0 0 10px #0ff;
+    }
+    .back-btn {
+      background: linear-gradient(45deg, #f00, #f66);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #f00, inset 0 0 4px #fff;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      border: 2px solid #000;
+      margin-top: 10px;
+    }
+    .back-btn:hover {
+      background: linear-gradient(45deg, #fff, #f00);
+      box-shadow: 0 0 15px #fff, inset 0 0 6px #fff;
+      transform: scale(1.1);
+    }
+    .back-btn:active {
+      transform: scale(0.95);
+    }
+    footer {
+      text-align: center;
+      color: #00ff00;
+      text-shadow: 0 0 4px #00ff00;
+      font-size: clamp(0.7rem, 2vw, 0.8rem);
+      padding: 10px;
+      width: 100%;
+    }
+    @media (max-width: 768px) {
+      .arcade-machine {
+        width: 95%;
+        padding: 10px;
+      }
+      .arcade-screen {
+        max-height: 45vh;
+      }
+      .marquee {
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
+      }
+      .game-card h2 {
+        font-size: clamp(0.8rem, 2.2vw, 1rem);
+      }
+      .game-card p {
+        font-size: clamp(0.5rem, 1.5vw, 0.7rem);
+      }
+    }
+    @media (max-width: 480px) {
+      .arcade-machine {
+        width: 98%;
+        padding: 8px;
+      }
+      .arcade-screen {
+        max-height: 40vh;
+      }
+      .marquee {
+        font-size: clamp(1rem, 3.5vw, 1.2rem);
+      }
+      .controls {
+        gap: 8px;
+      }
+      .control-btn, .back-btn {
+        padding: 8px 16px;
+        font-size: clamp(0.7rem, 1.8vw, 0.8rem);
       }
     }
   </style>
 </head>
 <body>
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl md:text-5xl font-bold text-center mb-8">NifftySwiggle</h1>
-    <h1 class="text-4xl md:text-4xl font-semibold text-center mb-14">Game Hub</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
-      <a href="./games/Chess/Chess.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Chess</h2>
-        <p class="text-sm">Original chess</p>
-      </a>
-
-      <a href="./games/ChessPuzzle/ChessPuzzle.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Puzzle Creator</h2>
-        <p class="text-sm">Create Chess Puzzles</p>
-      </a>
-
-      <a href="./games/BitBounce/BitBounce.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Bounce</h2>
-        <p class="text-sm">Classic jumper game</p>
-      </a>
-
-      <a href="./games/BitShooter/BitShooter.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Shooter</h2>
-        <p class="text-sm">Shoot them all</p>
-      </a>
-
-      <a href="./games/BitInvaders/BitInvaders.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Invaders</h2>
-        <p class="text-sm">Arcade shooter</p>
-      </a>
-
-      <a href="./games/BitBurst/BitBurst.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Burst</h2>
-        <p class="text-sm">Break all the platforms</p>
-      </a>
-
-      <a href="./games/BitDodger/BitDodger.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Dodger</h2>
-        <p class="text-sm">Dodge the blocks</p>
-      </a>
-
-      <a href="./games/BitRunner/BitRunner.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Runner</h2>
-        <p class="text-sm">Run and jump</p>
-      </a>
-
-      <a href="./games/BitDigger/BitDigger.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Bit Digger</h2>
-        <p class="text-sm">Dig the dirt</p>
-      </a>
-
-      <a href="./games/CleanOcean/CleanOcean.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Mother Gaia</h2>
-        <p class="text-sm">Fish out trash from the sea</p>
-      </a>
-
-      <a href="./games/rescue them/rescuethem.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Rescue Them</h2>
-        <p class="text-sm">Save all the pets</p>
-      </a>
-
-      <a href="./index.html" class="game-card bg-white text-gray-800 rounded-lg p-6 text-center shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">More</h2>
-        <p class="text-sm">More games coming soon!</p>
-      </a>
-
-      <!-- Add more cards here: Copy the <a> block and update href, title, and description -->
+  <div class="arcade-machine">
+    <div class="marquee">NifftySwiggle Arcade</div>
+    <div class="arcade-screen">
+      <div class="game-list active">
+        <div class="game-card" data-href="./games/Chess/Chess.html">
+          <h2>Chess</h2>
+          <p>Original chess</p>
+        </div>
+        <div class="game-card" data-href="./games/ChessPuzzle/ChessPuzzle.html">
+          <h2>Puzzle Creator</h2>
+          <p>Create Chess Puzzles</p>
+        </div>
+        <div class="game-card" data-href="./games/BitBounce/BitBounce.html">
+          <h2>Bit Bounce</h2>
+          <p>Classic jumper game</p>
+        </div>
+        <div class="game-card" data-href="./games/BitShooter/BitShooter.html">
+          <h2>Bit Shooter</h2>
+          <p>Shoot them all</p>
+        </div>
+        <div class="game-card" data-href="./games/BitInvaders/BitInvaders.html">
+          <h2>Bit Invaders</h2>
+          <p>Arcade shooter</p>
+        </div>
+        <div class="game-card" data-href="./games/BitBurst/BitBurst.html">
+          <h2>Bit Burst</h2>
+          <p>Break all the platforms</p>
+        </div>
+        <div class="game-card" data-href="./games/BitDodger/BitDodger.html">
+          <h2>Bit Dodger</h2>
+          <p>Dodge the blocks</p>
+        </div>
+        <div class="game-card" data-href="./games/BitRunner/BitRunner.html">
+          <h2>Bit Runner</h2>
+          <p>Run and jump</p>
+        </div>
+        <div class="game-card" data-href="./games/BitDigger/BitDigger.html">
+          <h2>Bit Digger</h2>
+          <p>Dig the dirt</p>
+        </div>
+        <div class="game-card" data-href="./games/CleanOcean/CleanOcean.html">
+          <h2>Mother Gaia</h2>
+          <p>Fish out trash from the sea</p>
+        </div>
+        <div class="game-card" data-href="./games/rescue them/rescuethem.html">
+          <h2>Rescue Them</h2>
+          <p>Save all the pets</p>
+        </div>
+        <div class="game-card" data-href="./index.html">
+          <h2>More</h2>
+          <p>More games coming soon!</p>
+        </div>
+      </div>
+      <div class="secret-game">
+        <canvas id="snake-canvas" width="300" height="300"></canvas>
+        <button class="back-btn" id="back-btn">Back to Menu</button>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="control-btn" id="up-btn">Up</button>
+      <button class="control-btn" id="down-btn">Down</button>
+      <button class="control-btn" id="left-btn">Left</button>
+      <button class="control-btn" id="right-btn">Right</button>
+      <button class="control-btn" id="select-btn">Select</button>
     </div>
   </div>
+  <footer>
+    <p>&copy; 2025 NifftySwiggle Arcade. All rights reserved.</p>
+    <p>Created by NifftySwiggle</p>
+  </footer>
   <script>
-    // Add click event listeners to game cards
-    document.querySelectorAll('.game-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = card.getAttribute('href');
+    const gameCards = document.querySelectorAll('.game-card');
+    const gameList = document.querySelector('.game-list');
+    const secretGame = document.querySelector('.secret-game');
+    const backBtn = document.getElementById('back-btn');
+    let selectedIndex = 0;
+    const konamiCode = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+    let inputSequence = [];
+
+    function updateSelection() {
+      gameCards.forEach((card, index) => {
+        card.classList.toggle('selected', index === selectedIndex);
+        if (index === selectedIndex) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
+    function navigate(direction) {
+      const gamesPerRow = 2;
+      if (direction === 'up') {
+        selectedIndex = Math.max(selectedIndex - gamesPerRow, 0);
+      } else if (direction === 'down') {
+        selectedIndex = Math.min(selectedIndex + gamesPerRow, gameCards.length - 1);
+      } else if (direction === 'left') {
+        selectedIndex = Math.max(selectedIndex - 1, Math.floor(selectedIndex / gamesPerRow) * gamesPerRow);
+      } else if (direction === 'right') {
+        selectedIndex = Math.min(selectedIndex + 1, Math.floor(selectedIndex / gamesPerRow) * gamesPerRow + 1);
+      }
+      updateSelection();
+    }
+
+    function checkKonamiCode(key) {
+      inputSequence.push(key);
+      if (inputSequence.length > konamiCode.length) {
+        inputSequence.shift();
+      }
+      if (inputSequence.join('') === konamiCode.join('')) {
+        startSecretGame();
+        inputSequence = [];
+      }
+    }
+
+    function selectGame() {
+      const selectedCard = gameCards[selectedIndex];
+      const url = selectedCard.getAttribute('data-href');
+      window.location.href = url;
+    }
+
+    function startSecretGame() {
+      gameList.classList.remove('active');
+      secretGame.classList.add('active');
+      initSnakeGame();
+    }
+
+    function initSnakeGame() {
+      const canvas = document.getElementById('snake-canvas');
+      const ctx = canvas.getContext('2d');
+      const gridSize = 20;
+      const tileCount = canvas.width / gridSize;
+      let snake = [{ x: 10, y: 10 }];
+      let food = { x: 15, y: 15 };
+      let dx = 0;
+      let dy = 0;
+      let score = 0;
+
+      function drawGame() {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0ff';
+        snake.forEach(segment => {
+          ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+        });
+        ctx.fillStyle = '#f00';
+        ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px Press Start 2P';
+        ctx.fillText(`Score: ${score}`, 10, 20);
+      }
+
+      function updateGame() {
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+          snake = [{ x: 10, y: 10 }];
+          dx = 0;
+          dy = 0;
+          score = 0;
+          food = { x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount) };
+        }
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+          score += 10;
+          food = { x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount) };
+        } else {
+          snake.pop();
+        }
+        drawGame();
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (secretGame.classList.contains('active')) {
+          if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
+          else if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
+          else if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
+          else if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
+        }
+      });
+
+      setInterval(updateGame, 100);
+    }
+
+    document.getElementById('up-btn').addEventListener('click', () => {
+      navigate('up');
+      checkKonamiCode('ArrowUp');
+    });
+    document.getElementById('down-btn').addEventListener('click', () => {
+      navigate('down');
+      checkKonamiCode('ArrowDown');
+    });
+    document.getElementById('left-btn').addEventListener('click', () => {
+      navigate('left');
+      checkKonamiCode('ArrowLeft');
+    });
+    document.getElementById('right-btn').addEventListener('click', () => {
+      navigate('right');
+      checkKonamiCode('ArrowRight');
+    });
+    document.getElementById('select-btn').addEventListener('click', selectGame);
+
+    backBtn.addEventListener('click', () => {
+      secretGame.classList.remove('active');
+      gameList.classList.add('active');
+      inputSequence = [];
+      selectedIndex = 0;
+      updateSelection();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!secretGame.classList.contains('active')) {
+        if (e.key === 'ArrowUp' || e.key === 'w') {
+          navigate('up');
+          checkKonamiCode('ArrowUp');
+        } else if (e.key === 'ArrowDown' || e.key === 's') {
+          navigate('down');
+          checkKonamiCode('ArrowDown');
+        } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+          navigate('left');
+          checkKonamiCode('ArrowLeft');
+        } else if (e.key === 'ArrowRight' || e.key === 'd') {
+          navigate('right');
+          checkKonamiCode('ArrowRight');
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          selectGame();
+        }
+      }
+    });
+
+    gameCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const url = card.getAttribute('data-href');
         window.location.href = url;
       });
     });
+
+    updateSelection();
+
+    // Update selection on resize
+    window.addEventListener('resize', () => {
+      updateSelection();
+    });
   </script>
 </body>
-<footer class="text-center py-4">
-  <p>&copy; 2025 Nifftyswiggle Game Hub. All rights reserved.</p>
-  <p>Created by NifftySwiggle</p>
 </html>
