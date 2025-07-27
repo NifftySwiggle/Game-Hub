@@ -13,7 +13,7 @@ app.use(express.static(__dirname));
 
 / Handle GET /
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "chessV1.html"));
+  res.sendFile(path.join(__dirname, "Chess.html"));
 });
 
 const PORT = process.env.PORT || 8080;
