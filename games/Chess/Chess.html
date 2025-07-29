@@ -11,99 +11,215 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      min-height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center; 
-      align-items: center; 
-      margin: 0; 
-      background-color: #f3f4f6; 
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-    #boardContainer { 
-      width: 100%; 
-      max-width: min(50vw, 500px);
-      height: auto; 
-      aspect-ratio: 1 / 1; 
-      display: flex; 
-      justify-content: center; 
-      margin: 0 auto;
-      touch-action: none;
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #f9fafb;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin-bottom: 1.5rem;
     }
-    #chessboard { 
-      width: 100%; 
-      max-width: min(50vw, 500px);
-      height: auto; 
-      aspect-ratio: 1 / 1; 
-      border: none; 
-    }
-    #gameControls, #tournamentInfo {
-      width: 100%;
-      max-width: 300px;
-    }
-    #gameInfo {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 10px;
-      text-align: center;
-      width: 100%;
-      max-width: min(50vw, 500px);
-    }
-    #promotionModal, #onlineMenuModal, #tournamentModal { 
-      display: none; 
-      position: fixed; 
-      max-height: 80vh; 
-      overflow-y: auto; 
-      top: 50%; 
-      left: 50%; 
-      transform: translate(-50%, -50%); 
-      background: white; 
-      padding: 20px; 
-      border-radius: 8px; 
-      box-shadow: 0 0 10px rgba(0,0,0,0.5); 
-      width: 90%; 
-      max-width: min(500px, 90vw);
-    }
-    .modal-content { text-align: center; }
-    .piece-option { cursor: pointer; margin: 0 10px; width: 50px; height: 50px; }
-    .piece-option:hover { transform: scale(1.1); }
-    #gameList, #tournamentList { max-height: 200px; overflow-y: auto; }
-    .game-item { cursor: pointer; padding: 10px; border-bottom: 1px solid #ddd; }
-    .game-item:hover { background-color: #f0f0f0; }
-    #pieceThemeSelect { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
-    .form-label { display: block; text-align: left; font-weight: bold; margin-bottom: 4px; }
     .main-container {
       width: 100%;
-      max-width: min(1200px, 95vw);
+      max-width: 1280px;
       margin: 0 auto;
       display: flex;
       flex-direction: row;
       justify-content: center;
       align-items: flex-start;
-      gap: 16px;
+      gap: 2rem;
       flex-wrap: wrap;
+      padding: 1.5rem;
+    }
+    #boardContainer {
+      width: 100%;
+      max-width: min(40vw, 560px);
+      height: auto;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      margin: 0 auto;
+      touch-action: none;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+    }
+    #chessboard {
+      width: 100%;
+      max-width: min(40vw, 560px);
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border: none;
+    }
+    #gameInfo {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      margin-top: 1rem;
+      text-align: center;
+      width: 100%;
+      max-width: min(40vw, 560px);
+      color: #1f2937;
+    }
+    #gameControls, #tournamentInfo {
+      width: 100%;
+      max-width: 360px;
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      color: #1f2937;
+    }
+    #gameControls h2, #tournamentInfo h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 1rem;
+    }
+    button {
+      transition: all 0.3s ease;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    #newGameBtn { background: #3b82f6; }
+    #newGameBtn:hover { background: #2563eb; }
+    #localMultiplayerBtn { background: #10b981; }
+    #localMultiplayerBtn:hover { background: #059669; }
+    #onlineMultiplayerBtn { background: #8b5cf6; }
+    #onlineMultiplayerBtn:hover { background: #7c3aed; }
+    #puzzleModeBtn { background: #f59e0b; }
+    #puzzleModeBtn:hover { background: #d97706; }
+    #tournamentBtn { background: #ef4444; }
+    #tournamentBtn:hover { background: #dc2626; }
+    #createGameBtn, #startTournamentBtn { background: #3b82f6; }
+    #createGameBtn:hover, #startTournamentBtn:hover { background: #2563eb; }
+    #closeMenuBtn, #closeTournamentModalBtn { background: #6b7280; }
+    #closeMenuBtn:hover, #closeTournamentModalBtn:hover { background: #4b5563; }
+    #pieceThemeSelect {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: #1f2937;
+      font-size: 0.95rem;
+    }
+    #promotionModal, #onlineMenuModal, #tournamentModal {
+      display: none;
+      position: fixed;
+      max-height: 80vh;
+      overflow-y: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: min(500px, 90vw);
+      color: #1f2937;
+    }
+    .modal-content h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 1.5rem;
+    }
+    .piece-option {
+      cursor: pointer;
+      margin: 0 0.75rem;
+      width: 60px;
+      height: 60px;
+      transition: transform 0.2s ease;
+    }
+    .piece-option:hover {
+      transform: scale(1.15);
+    }
+    #gameList, #tournamentList {
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f9fafb;
+    }
+    .game-item {
+      cursor: pointer;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      transition: background 0.2s ease;
+      font-size: 0.95rem;
+    }
+    .game-item:hover {
+      background: #e5e7eb;
+    }
+    .form-label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #f9fafb;
+      color: #1f2937;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    footer {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      text-align: center;
+      color: #d1d5db;
+      font-size: 0.9rem;
     }
     @media (max-width: 768px) {
       .main-container {
         flex-direction: column;
         align-items: center;
+        padding: 1rem;
       }
-      #boardContainer, #chessboard { 
-        max-width: min(90vw, 400px);
+      #boardContainer, #chessboard {
+        max-width: min(90vw, 480px);
         min-width: 320px;
       }
-      #gameInfo { 
-        max-width: min(90vw, 400px);
+      #gameInfo {
+        max-width: min(90vw, 480px);
       }
-      #gameControls, #tournamentInfo { 
-        max-width: 360px;
+      #gameControls, #tournamentInfo {
+        max-width: 400px;
       }
-    }
-    footer {
-      margin-top: 20px;
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
@@ -115,11 +231,11 @@
         <div id="chessboard"></div>
       </div>
       <div id="gameInfo" class="bg-white p-4 rounded shadow">
-        <p id="status" class="mb-2 font-semibold">Select a game mode to start</p>
-        <p id="playerColor" class="mb-2">Your Color: White</p>
-        <p id="turn" class="mb-2">Turn: White</p>
-        <p id="whiteTimer" class="mb-2">White: 10:00</p>
-        <p id="blackTimer" class="mb-2">Black: 10:00</p>
+        <p id="status" class="mb-2 font-semibold text-lg">Select a game mode to start</p>
+        <p id="playerColor" class="mb-2 text-base">Your Color: White</p>
+        <p id="turn" class="mb-2 text-base">Turn: White</p>
+        <p id="whiteTimer" class="mb-2 text-base">White: 3:00</p>
+        <p id="blackTimer" class="mb-2 text-base">Black: 3:00</p>
       </div>
     </div>
     <div class="flex flex-col gap-4">
@@ -135,7 +251,7 @@
           <option value="standard" selected>Standard</option>
           <option value="custom">Origins</option>
           <option value="unicode">Unicode</option>
-          <option value="merida">Soon</option>
+          <option value="merida">Merida</option>
         </select>
       </div>
       <div id="tournamentInfo" class="bg-white p-4 rounded shadow hidden">
@@ -149,12 +265,13 @@
     <img src="./assets/origins/bQ.png" class="piece-option" data-piece="q" alt="Queen">
     <img src="./assets/origins/bR.png" class="piece-option" data-piece="r" alt="Rook">
     <img src="./assets/origins/bB.png" class="piece-option" data-piece="b" alt="Bishop">
-    <img src="./assets/origins/bK.png" class="piece-option" data-piece="n" alt="Knight">
+    <img src="./assets/origins/bN.png" class="piece-option" data-piece="n" alt="Knight">
   </div>
   <div id="onlineMenuModal" class="modal-content">
     <h2 class="text-lg font-semibold mb-4">Online Games</h2>
-    <label for="presetSelect">Choose time control:</label>
+    <label for="presetSelect" class="form-label">Choose time control:</label>
     <select id="presetSelect">
+      <option value="0-0">No Time</option>
       <option value="3-0">Blitz (3|0)</option>
       <option value="5-2">Rapid (5|2)</option>
       <option value="10-5">Classical (10|5)</option>
@@ -174,7 +291,7 @@
       <label for="tournamentRounds" class="form-label">Number of Rounds</label>
       <input type="number" id="tournamentRounds" placeholder="Enter number of rounds" class="w-full p-2 mb-3 border rounded" min="1" value="3" required>
       <label for="tournamentMinutes" class="form-label">Minutes per Player</label>
-      <input type="number" id="tournamentMinutes" placeholder="Enter minutes per player" class="w-full p-2 mb-3 border rounded" min="1" value="10" required>
+      <input type="number" id="tournamentMinutes" placeholder="Enter minutes per player" class="w-full p-2 mb-3 border rounded" min="0" value="10" required>
       <label for="tournamentIncrement" class="form-label">Increment (Seconds)</label>
       <input type="number" id="tournamentIncrement" placeholder="Enter increment in seconds" class="w-full p-2 mb-3 border rounded" min="0" value="0" required>
       <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600">Create Tournament</button>
@@ -199,11 +316,15 @@ let pendingMove = null;
 let availableGames = [];
 let touchStartSquare = null;
 let touchPiece = null;
-let whiteTime = 600;
-let blackTime = 600;
+let whiteTime = 180;
+let blackTime = 180;
 let timeIncrement = 0;
 let timerInterval = null;
 let currentTurn = 'w';
+let firstMoveMade = false;
+let lastServerWhiteTime = 0;
+let lastServerBlackTime = 0;
+let lastUpdateTimestamp = 0;
 
 const pieceThemes = {
   unicode: (piece) => {
@@ -273,22 +394,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupEventListeners();
     updateGameInfo();
+
+    // Start global timer display update interval
+    setInterval(() => {
+      if (gameStarted && !chess.game_over()) {
+        if (gameMode === 'online' || gameMode === 'tournament') {
+          let elapsed = Math.floor((Date.now() - lastUpdateTimestamp) / 1000);
+          let currentWhiteTime = Math.max(0, lastServerWhiteTime - (currentTurn === 'w' ? elapsed : 0));
+          let currentBlackTime = Math.max(0, lastServerBlackTime - (currentTurn === 'b' ? elapsed : 0));
+          $('#whiteTimer').text(`White: ${formatTime(currentWhiteTime)}`);
+          $('#blackTimer').text(`Black: ${formatTime(currentBlackTime)}`);
+        } else {
+          $('#whiteTimer').text(`White: ${formatTime(whiteTime)}`);
+          $('#blackTimer').text(`Black: ${formatTime(blackTime)}`);
+        }
+      } else {
+        if (gameMode === 'online' || gameMode === 'tournament') {
+          $('#whiteTimer').text(`White: ${formatTime(lastServerWhiteTime)}`);
+          $('#blackTimer').text(`Black: ${formatTime(lastServerBlackTime)}`);
+        } else {
+          $('#whiteTimer').text(`White: ${formatTime(whiteTime)}`);
+          $('#blackTimer').text(`Black: ${formatTime(blackTime)}`);
+        }
+      }
+    }, 1000);
   } catch (err) {
     console.error('Initialization failed:', err);
   }
 });
 
 function formatTime(seconds) {
+  if (seconds <= 0) return '0:00';
   const min = Math.floor(seconds / 60);
   const sec = Math.floor(seconds % 60);
   return `${min}:${sec < 10 ? '0' : ''}${sec}`;
 }
 
 function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
+  if (!firstMoveMade || timerInterval || gameMode === 'online' || gameMode === 'tournament') return;
+  if (whiteTime === 0 && blackTime === 0) {
+    $('#whiteTimer').text('White: No Time');
+    $('#blackTimer').text('Black: No Time');
+    return;
+  }
   timerInterval = setInterval(() => {
     if (!gameStarted || chess.game_over()) {
       clearInterval(timerInterval);
+      timerInterval = null;
       return;
     }
     if (currentTurn === 'w') {
@@ -296,6 +448,7 @@ function startTimer() {
       if (whiteTime === 0) {
         $('#status').text('Time out! Black wins!');
         clearInterval(timerInterval);
+        timerInterval = null;
         gameStarted = false;
       }
     } else {
@@ -303,6 +456,7 @@ function startTimer() {
       if (blackTime === 0) {
         $('#status').text('Time out! White wins!');
         clearInterval(timerInterval);
+        timerInterval = null;
         gameStarted = false;
       }
     }
@@ -466,6 +620,7 @@ function makeMove(move) {
       console.log('Move successful:', result);
       board.position(chess.fen());
       currentTurn = chess.turn();
+      firstMoveMade = true;
       if (gameMode === 'online' || gameMode === 'tournament') {
         ws.send(JSON.stringify({ type: 'move', gameId, move }));
       } else {
@@ -501,6 +656,7 @@ function computerMove() {
     chess.move(bestMove);
     board.position(chess.fen());
     currentTurn = chess.turn();
+    firstMoveMade = true;
     blackTime += timeIncrement;
     startTimer();
     updateGameInfo();
@@ -604,8 +760,13 @@ function updateGameInfo() {
     $('#status').text(status);
     $('#playerColor').text(`Your Color: ${playerColor === 'w' ? 'White' : 'Black'}`);
     $('#turn').text(`Turn: ${chess.turn() === 'w' ? 'White' : 'Black'}`);
-    $('#whiteTimer').text(`White: ${formatTime(whiteTime)}`);
-    $('#blackTimer').text(`Black: ${formatTime(blackTime)}`);
+    if (gameMode === 'online' || gameMode === 'tournament') {
+      $('#whiteTimer').text(`White: ${formatTime(lastServerWhiteTime)}`);
+      $('#blackTimer').text(`Black: ${formatTime(lastServerBlackTime)}`);
+    } else {
+      $('#whiteTimer').text(`White: ${formatTime(whiteTime)}`);
+      $('#blackTimer').text(`Black: ${formatTime(blackTime)}`);
+    }
   } catch (err) {
     console.error('updateGameInfo error:', err);
   }
@@ -625,7 +786,8 @@ function updateGameList() {
     $('#gameList').empty();
     availableGames.forEach(game => {
       let gameType = game.isTournament ? 'Tournament' : 'Online Game';
-      let item = $(`<div class="game-item" data-game-id="${game.id}">${gameType} ${game.id} - ${game.players} player(s)</div>`);
+      let timeDisplay = game.timeControl.minutes === 0 ? 'No Time' : `${game.timeControl.minutes}|${game.timeControl.increment}`;
+      let item = $(`<div class="game-item" data-game-id="${game.id}">${gameType} ${game.id} - ${game.players} player(s) - ${timeDisplay}</div>`);
       item.click(() => joinGame(game.id, game.isTournament));
       $('#gameList').append(item);
     });
@@ -646,9 +808,10 @@ function updateTournamentList() {
       const timeControl = t.timeControl || { minutes: 10, increment: 0 };
       const name = t.name || t.id;
       const players = t.players || 1;
+      let timeDisplay = timeControl.minutes === 0 ? 'No Time' : `${timeControl.minutes}+${timeControl.increment}`;
       let item = $(`
         <div class="game-item" data-tournament-id="${t.id}">
-          <strong>${name}</strong> - Players: ${players} - Rounds: ${rounds} - Time: ${timeControl.minutes}+${timeControl.increment}
+          <strong>${name}</strong> - Players: ${players} - Rounds: ${rounds} - Time: ${timeDisplay}
           <button class="joinTournamentBtn bg-green-500 text-white px-2 py-1 rounded ml-2 hover:bg-green-600">Join</button>
         </div>
       `);
@@ -669,6 +832,8 @@ function joinGame(id, isTournament) {
   try {
     gameMode = isTournament ? 'tournament' : 'online';
     gameStarted = true;
+    gameId = id;
+    firstMoveMade = false;
     ws.send(JSON.stringify({ type: 'joinGame', gameId: id, isTournament }));
     $('#onlineMenuModal').hide();
     if (isTournament) {
@@ -689,12 +854,12 @@ function setupEventListeners() {
       gameMode = 'computer';
       playerColor = 'w';
       gameStarted = true;
+      firstMoveMade = false;
       whiteTime = 600;
       blackTime = 600;
       timeIncrement = 0;
       currentTurn = 'w';
       board.position('start');
-      startTimer();
       updateGameInfo();
       $('#promotionModal').hide();
       $('#tournamentInfo').addClass('hidden');
@@ -705,14 +870,14 @@ function setupEventListeners() {
       console.log('Local Multiplayer button clicked');
       chess.reset();
       gameMode = 'local';
-      playerColor = 'w'; // Default to white, as both sides are played locally
+      playerColor = 'w';
       gameStarted = true;
-      whiteTime = 600;
-      blackTime = 600;
+      firstMoveMade = false;
+      whiteTime = 180;
+      blackTime = 180;
       timeIncrement = 0;
       currentTurn = 'w';
       board.position('start');
-      startTimer();
       updateGameInfo();
       $('#promotionModal').hide();
       $('#tournamentInfo').addClass('hidden');
@@ -732,6 +897,7 @@ function setupEventListeners() {
         return;
       }
       gameStarted = true;
+      firstMoveMade = false;
       whiteTime = 600;
       blackTime = 600;
       timeIncrement = 0;
@@ -760,7 +926,12 @@ function setupEventListeners() {
       const [minutes, increment] = $('#presetSelect').val().split('-').map(Number);
       whiteTime = minutes * 60;
       blackTime = minutes * 60;
+      lastServerWhiteTime = minutes * 60;
+      lastServerBlackTime = minutes * 60;
       timeIncrement = increment;
+      gameMode = 'online';
+      gameStarted = true;
+      firstMoveMade = false;
       ws.send(JSON.stringify({
         type: 'createGame',
         isTournament: false,
@@ -785,6 +956,8 @@ function setupEventListeners() {
       const increment = parseInt($('#tournamentIncrement').val());
       whiteTime = minutes * 60;
       blackTime = minutes * 60;
+      lastServerWhiteTime = minutes * 60;
+      lastServerBlackTime = minutes * 60;
       timeIncrement = increment;
       ws.send(JSON.stringify({
         type: 'createTournament',
@@ -874,13 +1047,21 @@ function connectWebSocket() {
         if (data.type === 'gameCreated') {
           gameId = data.gameId;
           playerColor = data.color || 'w';
+          gameMode = 'online';
+          gameStarted = true;
+          firstMoveMade = false;
           chess.reset();
           board.position('start');
           currentTurn = 'w';
-          startTimer();
-          updateGameInfo();
+          lastServerWhiteTime = data.timeControl.minutes * 60;
+          lastServerBlackTime = data.timeControl.minutes * 60;
+          whiteTime = lastServerWhiteTime;
+          blackTime = lastServerBlackTime;
+          timeIncrement = data.timeControl.increment;
+          lastUpdateTimestamp = Date.now();
           $('#onlineMenuModal').hide();
           $('#status').text(`Game ${gameId} created. Waiting for opponent...`);
+          updateGameInfo();
         } else if (data.type === 'tournamentCreated') {
           tournamentId = data.tournamentId;
           tournamentActive = true;
@@ -906,22 +1087,43 @@ function connectWebSocket() {
         } else if (data.type === 'opponentJoined' || data.type === 'gameStarted' || data.type === 'gameStart') {
           gameId = data.gameId;
           playerColor = data.color || playerColor;
+          gameMode = data.isTournament ? 'tournament' : 'online';
+          gameStarted = true;
+          firstMoveMade = false;
           chess.reset();
           board.position('start');
           currentTurn = 'w';
-          startTimer();
-          updateGameInfo();
+          lastServerWhiteTime = data.timeControl ? data.timeControl.minutes * 60 : whiteTime;
+          lastServerBlackTime = data.timeControl ? data.timeControl.minutes * 60 : blackTime;
+          whiteTime = lastServerWhiteTime;
+          blackTime = lastServerBlackTime;
+          timeIncrement = data.timeControl ? data.timeControl.increment : timeIncrement;
+          lastUpdateTimestamp = Date.now();
+          $('#onlineMenuModal').hide();
           $('#status').text(`Game ${gameId} started. You play ${playerColor === 'w' ? 'White' : 'Black'}.`);
+          updateGameInfo();
         } else if (data.type === 'move') {
           chess.move(data.move);
           board.position(chess.fen());
           currentTurn = chess.turn();
+          firstMoveMade = true;
           if (data.time) {
-            whiteTime = data.time.white;
-            blackTime = data.time.black;
+            lastServerWhiteTime = data.time.white;
+            lastServerBlackTime = data.time.black;
+            whiteTime = lastServerWhiteTime;
+            blackTime = lastServerBlackTime;
+            lastUpdateTimestamp = Date.now();
           }
-          startTimer();
           updateGameInfo();
+        } else if (data.type === 'gameOver') {
+          if (data.reason === 'timeout') {
+            $('#status').text(`Time out! ${data.winner === 'white' ? 'White' : 'Black'} wins!`);
+            gameStarted = false;
+            firstMoveMade = false;
+            lastServerWhiteTime = data.time ? data.time.white : lastServerWhiteTime;
+            lastServerBlackTime = data.time ? data.time.black : lastServerBlackTime;
+            updateGameInfo();
+          }
         } else if (data.type === 'availableGames' || data.type === 'lobbyData') {
           availableGames = data.games.map(game => ({
             id: game.id,
@@ -941,7 +1143,8 @@ function connectWebSocket() {
         } else if (data.type === 'opponentDisconnected') {
           $('#status').text('Opponent disconnected. Game ended.');
           gameStarted = false;
-          clearInterval(timerInterval);
+          firstMoveMade = false;
+          updateGameInfo();
         }
       } catch (err) {
         console.error('WebSocket message error:', err);
@@ -950,12 +1153,14 @@ function connectWebSocket() {
     ws.onclose = () => {
       console.log('Disconnected from WebSocket server');
       $('#status').text('Disconnected from server. Please refresh.');
-      clearInterval(timerInterval);
+      gameStarted = false;
+      updateGameInfo();
     };
     ws.onerror = (err) => {
       console.error('WebSocket error:', err);
       $('#status').text('WebSocket error. Please refresh.');
-      clearInterval(timerInterval);
+      gameStarted = false;
+      updateGameInfo();
     };
   } catch (err) {
     console.error('connectWebSocket error:', err);
@@ -963,7 +1168,7 @@ function connectWebSocket() {
   }
 }
 </script>
-<footer align="center" class="mt-8 text-center text-gray-600">
+<footer align="center" class="mt-8 text-center text-gray-400">
   <p>&copy; 2025 Strategic Play Chess Game</p>
   <p>Created by NifftySwiggle</p>
 </footer>
